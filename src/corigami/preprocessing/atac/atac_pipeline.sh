@@ -69,11 +69,7 @@ zcat ./fastq/sub_merged_R2.fastq.gz | echo "sub end 2 reads: $((`wc -l`/4))"
 echo "Files merged, running sns pipeline"
 mkdir -p sns
 cd sns
-<<<<<<< HEAD
 # git clone --depth 1 https://github.com/igordot/sns
-=======
-git clone --depth 1 https://github.com/igordot/sns
->>>>>>> backup/old-main
 sns/generate-settings hg38
 sns/gather-fastqs ../fastq
 sns/run atac

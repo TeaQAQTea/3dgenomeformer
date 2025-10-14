@@ -3,10 +3,15 @@ from torch.utils.data import Dataset
 from chromosome_dataset_test import ChromosomeDataset
 import data_feature as data_feature
 <<<<<<< HEAD
+<<<<<<< HEAD
 import random
 import numpy as np
 =======
 >>>>>>> backup/old-main
+=======
+import random
+import numpy as np
+>>>>>>> main-clean
 
 class GenomeDataset(Dataset):
     '''
@@ -40,9 +45,12 @@ class GenomeDataset(Dataset):
         elif mode == 'test':
             self.chr_names = ['chr15']
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         else:
             raise Exception(f'Unknown mode {mode}')
 
@@ -64,6 +72,9 @@ class GenomeDataset(Dataset):
         chr_name, chr_idx = self.get_chr_idx(idx)
         seq, features,  di, start, end = self.chr_data[chr_name][chr_idx]
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         random.seed(0)
         old_features = features
         features=[]
@@ -73,8 +84,11 @@ class GenomeDataset(Dataset):
         else:
             features.append(old_features[0])
             features.append(old_features[2])
+<<<<<<< HEAD
 =======
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         if chr_name[:3] == 'chr':
             chr_name = chr_name[3:] # Remove 'chr' from the name
         chr_name=int(chr_name) # Check if the name is a number

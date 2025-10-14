@@ -41,19 +41,27 @@ class ConvModel(nn.Module):
 class ConvTransModel(ConvModel):
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     def __init__(self, num_genomic_features, mid_hidden = 256, record_attn = False,record_feature = False):
 =======
     def __init__(self, num_genomic_features, mid_hidden = 256, record_attn = False ,record_feature = False):
 >>>>>>> backup/old-main
+=======
+    def __init__(self, num_genomic_features, mid_hidden = 256, record_attn = False,record_feature = False):
+>>>>>>> main-clean
         super(ConvTransModel, self).__init__(num_genomic_features)
         print('Initializing ConvTransModel')
         self.encoder = blocks.EncoderSplit(num_genomic_features, output_size = mid_hidden, num_blocks = 12)
         self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.diDecoder = blocks.diDecoder(mid_hidden,save_features=record_feature)
 =======
         self.diDecoder = blocks.diDecoder(mid_hidden ,save_features=record_feature)
 >>>>>>> backup/old-main
+=======
+        self.diDecoder = blocks.diDecoder(mid_hidden,save_features=record_feature)
+>>>>>>> main-clean
         self.decoder = blocks.Decoder(mid_hidden * 2)
         self.record_attn = record_attn
         self.record_feature = record_feature
@@ -72,6 +80,7 @@ class ConvTransModel(ConvModel):
             x = self.attn(x)
         feature = self.move_feature_forward(x)
 <<<<<<< HEAD
+<<<<<<< HEAD
         if self.record_feature:  
             di,out_feature = self.diDecoder(feature)
 =======
@@ -79,6 +88,10 @@ class ConvTransModel(ConvModel):
         if self.record_feature:
             di, out_features = self.diDecoder(feature)
 >>>>>>> backup/old-main
+=======
+        if self.record_feature:  
+            di,out_feature = self.diDecoder(feature)
+>>>>>>> main-clean
         else:
             di = self.diDecoder(feature)
 
@@ -88,19 +101,27 @@ class ConvTransModel(ConvModel):
         if self.record_attn:
             if self.record_feature:
 <<<<<<< HEAD
+<<<<<<< HEAD
                 return x,di, attn_weights,out_feature
 =======
                 return x,di, attn_weights, out_features
 >>>>>>> backup/old-main
+=======
+                return x,di, attn_weights,out_feature
+>>>>>>> main-clean
             else:
                 return x,di, attn_weights
         else:
             if self.record_feature:
 <<<<<<< HEAD
+<<<<<<< HEAD
                 return x,di,out_feature
 =======
                 return x,di, out_features
 >>>>>>> backup/old-main
+=======
+                return x,di,out_feature
+>>>>>>> main-clean
             else:
                 return x,di
 

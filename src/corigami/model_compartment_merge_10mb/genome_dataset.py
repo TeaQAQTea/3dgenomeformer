@@ -56,6 +56,7 @@ class GenomeDataset(Dataset):
         chr_name, chr_idx = self.get_chr_idx(idx)
         seq, features,  di, start, end = self.chr_data[chr_name][chr_idx]
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         random.seed(0)
         old_features = features
@@ -67,6 +68,8 @@ class GenomeDataset(Dataset):
             features.append(old_features[0])
             features.append(old_features[2])
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         if chr_name[:3] == 'chr':
             chr_name = chr_name[3:] # Remove 'chr' from the name
         chr_name=int(chr_name) # Check if the name is a number

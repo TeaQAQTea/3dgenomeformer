@@ -27,13 +27,8 @@ class ChromosomeDataset(Dataset):
         self.res = 5000 # 10kb resolution
         self.bins = 209.7152*2 # 209.7152 bins 2097152 bp
         self.image_scale = 512 # IMPORTANT, scale 210 to 256
-<<<<<<< HEAD
         self.sample_bins = 500
         self.stride = 50# bins
-=======
-        self.sample_bins = 1000
-        self.stride = 100# bins
->>>>>>> backup/old-main
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')

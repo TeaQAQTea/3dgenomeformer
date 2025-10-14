@@ -24,13 +24,8 @@ class ChromosomeDataset(Dataset):
     '''
     def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True):
         self.use_aug = use_aug
-<<<<<<< HEAD
         self.res = 10000 # 10kb resolution
         self.bins = 209.7152 # 209.7152 bins 2097152 bp
-=======
-        self.res = 5000 # 10kb resolution
-        self.bins = 209.7152*2 # 209.7152 bins 2097152 bp
->>>>>>> backup/old-main
         self.image_scale = 512 # IMPORTANT, scale 210 to 256
         self.sample_bins = 500
         self.stride = 25# bins

@@ -184,9 +184,7 @@ class SequenceFeature(Feature):
         seq = seq[start : end]
         en_dict = {'a' : 0, 't' : 1, 'c' : 2, 'g' : 3, 'n' : 4}
         en_seq = [en_dict[ch] for ch in seq]
-        print(en_seq)
-        np_seq = np.array(en_seq, dtype = float)
-
+        np_seq = np.array(en_seq, dtype = int)
         return np_seq
 
     def onehot_encode(self, seq):

@@ -108,6 +108,7 @@ class Encoder(nn.Module):
         self.conv_end = nn.Conv1d(256, output_size, 1)
 
     def forward(self, x):
+        print(x.shape)
         x = self.conv_start(x)
         x = self.res_blocks(x)
         out = self.conv_end(x)
@@ -277,7 +278,9 @@ class PositionalEncoding(nn.Module):
         Args:
             x: Tensor, shape [seq_len, batch_size, embedding_dim]
         """
+        x = x.transpose(0, 1)
         x = x + self.pe[:x.size(0)]
+        x = x.transpose(0, 1)
         return self.dropout(x)
 
 class AttnModule(nn.Module):

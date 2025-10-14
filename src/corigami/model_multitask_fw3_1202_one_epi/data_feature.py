@@ -136,10 +136,14 @@ class diOutput(GenomicFeatureSingleThread):
         # middle_end = min(int(end), mid_point + middle_length // 2)
         with pbw.open(self.path) as bw_file:
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
             mean_value = bw_file.stats(chr_name, start, end, type='max',nBins=256,numpy=True)
         mean_value = np.nan_to_num(mean_value, 0)
 
         return mean_value
+<<<<<<< HEAD
 =======
             max_value = bw_file.stats(chr_name, start, end, type='max',nBins=256,numpy=True)
             min_value = bw_file.stats(chr_name, start, end, type='min',nBins=256,numpy=True)
@@ -149,6 +153,8 @@ class diOutput(GenomicFeatureSingleThread):
 
         return values
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
     
 
 class SequenceFeature(Feature):

@@ -25,12 +25,17 @@ class ChromosomeDataset(Dataset):
     def __init__(self, celltype_root, chr_name, omit_regions, di_file, feature_list, use_aug = True):
         self.use_aug = use_aug
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.res = 10000 # 10kb resolution
         self.bins = 209.7152 # 209.7152 bins 2097152 bp
 =======
         self.res = 8192# 10kb resolution
         self.bins = 256 # 209.7152 bins 2097152 bp
 >>>>>>> backup/old-main
+=======
+        self.res = 10000 # 10kb resolution
+        self.bins = 209.7152 # 209.7152 bins 2097152 bp
+>>>>>>> main-clean
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
         self.sample_bins = 500
         self.stride =25# bins
@@ -49,10 +54,14 @@ class ChromosomeDataset(Dataset):
         self.all_intervals = self.get_active_intervals()
         self.intervals=self.all_intervals
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.intervals = self.filter(self.all_intervals, omit_regions)
 =======
         # self.intervals = self.filter(self.all_intervals, omit_regions)
 >>>>>>> backup/old-main
+=======
+        self.intervals = self.filter(self.all_intervals, omit_regions)
+>>>>>>> main-clean
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]
@@ -123,9 +132,12 @@ class ChromosomeDataset(Dataset):
         '''
         # Sequence processing
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         print(start, end)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         seq = self.seq.get(start, end)
         # Features processing
         features = [item.get(self.chr_name, start, end) for item in self.genomic_features]

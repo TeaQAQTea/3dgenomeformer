@@ -6,11 +6,7 @@ import pytorch_lightning as pl
 import pytorch_lightning.callbacks as callbacks
 import os
 import corigami_models
-<<<<<<< HEAD
 import genome_dataset_test as genome_dataset
-=======
-import genome_dataset
->>>>>>> backup/old-main
 from blocks import EncoderSplit, diDecoder, TransformerLayer
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -67,33 +63,6 @@ class FeatureConv(nn.Module):
         return self.relu(x)
 
 # 数据处理流程
-<<<<<<< HEAD
-=======
-def process_data(encoder, transformer, decoder, data, num_splits=10):
-    # 将数据分为指定的块数
-    split_data = torch.chunk(data, num_splits, dim=1)
-
-    # 用 EncoderSplit 提取每块的特征
-    features = []
-    for block in split_data:
-        feature = encoder(block)
-        features.append(feature)
-
-    # 拼接所有提取的特征
-    concatenated_features = torch.cat(features, dim=1)
-
-    # 通过卷积层处理拼接后的特征
-    conv_layer = FeatureConv(input_channels=concatenated_features.shape[1], output_channels=128)
-    conv_features = conv_layer(concatenated_features)
-
-    # 将卷积后的特征输入到 Transformer 中
-    transformer_output = transformer(conv_features)
-
-    # 使用 diDecoder 解码
-    decoded_output = decoder(transformer_output)
-
-    return decoded_output
->>>>>>> backup/old-main
 
 def load_partial_weights(model, checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
@@ -118,12 +87,8 @@ class GenomeModel(pl.LightningModule):
         self.trainer_max_epochs = trainer_max_epochs
         self.args=args
         if not os.path.exists(args.run_save_path):
-<<<<<<< HEAD
             os.mkdir(args.run_save_path)
 
-=======
-            os.makedirs(args.run_save_path)
->>>>>>> backup/old-main
         # 卷积层：将输入通道从 2560 转换为 256
         self.block1 = DilatedResidualBlock(in_channels=256, out_channels=128, kernel_size=3, dilation=1, stride=2)  # 序列长度从 2560 减少
         self.block2 = DilatedResidualBlock(in_channels=128, out_channels=256, kernel_size=3, dilation=2, stride=2)  # 进一步减少序列长度
@@ -179,16 +144,10 @@ class GenomeModel(pl.LightningModule):
          # 形状为 (4, 256, 256)
 
         # 最终通过 decoder 进行解码
-<<<<<<< HEAD
         
         output = self.decoder(conv_output)
 
         return output,conv_output
-=======
-        output = self.decoder(conv_output)
-
-        return output
->>>>>>> backup/old-main
 
     def proc_batch(self, batch):
         seq, features,  di, start, end, chr_name, chr_idx = batch
@@ -222,12 +181,8 @@ class GenomeModel(pl.LightningModule):
                     #    'target':self._shared_eval_step(batch, batch_idx)['target'],
                     #    'predict':self._shared_eval_step(batch, batch_idx)['predict'],
                        'di_target':self._shared_eval_step(batch, batch_idx)['di_target'],
-<<<<<<< HEAD
                        'di_predict':self._shared_eval_step(batch, batch_idx)['di_predict'],
                        'features':self._shared_eval_step(batch, batch_idx)['features']}
-=======
-                       'di_predict':self._shared_eval_step(batch, batch_idx)['di_predict']}
->>>>>>> backup/old-main
         
         start=self._shared_eval_step(batch, batch_idx)['start']
         end=self._shared_eval_step(batch, batch_idx)['end']
@@ -238,17 +193,10 @@ class GenomeModel(pl.LightningModule):
 
     def _shared_eval_step(self, batch, batch_idx):
         inputs, di,start, end, chr_name, chr_idx = self.proc_batch(batch)
-<<<<<<< HEAD
         outputs_di,features = self(inputs)
         criterion = torch.nn.MSELoss()
         loss = criterion(outputs_di, di)
         return {'loss' : loss,'di_target':di,'di_predict':outputs_di,'start':start,'end':end,'chr_name':chr_name,'chr_idx':chr_idx,'features':features}
-=======
-        outputs_di = self(inputs)
-        criterion = torch.nn.MSELoss()
-        loss = criterion(outputs_di, di)
-        return {'loss' : loss,'di_target':di,'di_predict':outputs_di,'start':start,'end':end,'chr_name':chr_name,'chr_idx':chr_idx}
->>>>>>> backup/old-main
 
     # 记录每个 epoch 的统计信息
     def training_epoch_end(self, step_outputs):
@@ -272,21 +220,14 @@ class GenomeModel(pl.LightningModule):
         # predict=torch.cat(step_outputs['predict'],dim=0)
         di_target=torch.cat(step_outputs['di_target'],dim=0)
         di_predict=torch.cat(step_outputs['di_predict'],dim=0)
-<<<<<<< HEAD
         features=torch.cat(step_outputs['features'],dim=0)
-=======
->>>>>>> backup/old-main
 
         # nonzero_indices = torch.nonzero(pearsonr).squeeze()
         # pearsonr= pearsonr[nonzero_indices].mean()
         # pearsonr = torch.tensor(step_outputs['pearson_r'])
         # pearsonr=pearsonr.detach()
         # print({'loss' : loss,'target':target,'predict':predict})
-<<<<<<< HEAD
         return {'loss' : loss,'di_target':di_target,'di_predict':di_predict,'features':features}
-=======
-        return {'loss' : loss,'di_target':di_target,'di_predict':di_predict}
->>>>>>> backup/old-main
     
     def test_epoch_end(self, step_outputs):
         step_outputs_dict = {}
@@ -296,10 +237,7 @@ class GenomeModel(pl.LightningModule):
         # step_outputs_dict['predict'] = [out[0]['predict'] for out in step_outputs]
         step_outputs_dict['di_target']= [out[0]['di_target'] for out in step_outputs]
         step_outputs_dict['di_predict'] = [out[0]['di_predict'] for out in step_outputs]
-<<<<<<< HEAD
         step_outputs_dict['features'] = [out[0]['features'] for out in step_outputs]
-=======
->>>>>>> backup/old-main
         start=[out[1] for out in step_outputs]
         start=torch.cat(start,dim=0)
         end=[out[2] for out in step_outputs]
@@ -329,10 +267,7 @@ class GenomeModel(pl.LightningModule):
             f.create_dataset(data=start.detach().cpu().numpy(), name='start')
             f.create_dataset(data=end.detach().cpu().numpy(), name='end')
             f.create_dataset(data=chr_name.detach().cpu().numpy(), name='chr_name')
-<<<<<<< HEAD
             f.create_dataset(data=ret_metrics['features'].detach().cpu().numpy(), name='features')
-=======
->>>>>>> backup/old-main
         print(f'Output saved to {output_path}')
 
     def configure_optimizers(self):
@@ -510,11 +445,7 @@ def init_training(args):
     pl_module = GenomeModel(
         encoder=EncoderSplit(num_epi=2, output_size=256),
         transformer=TransformerLayer(d_model=256, nhead=8),
-<<<<<<< HEAD
         decoder=diDecoder(hidden_dim=256),
-=======
-        decoder=diDecoder(hidden_dim=128),
->>>>>>> backup/old-main
         num_splits=args.num_splits,
         learning_rate=args.lr,
         trainer_max_epochs=args.trainer_max_epochs,

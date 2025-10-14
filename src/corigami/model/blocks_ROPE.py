@@ -3,9 +3,12 @@ import torch.nn as nn
 import numpy as np
 import copy
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import ../transformer/transformer as transformer
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
 class ConvBlock(nn.Module):
     def __init__(self, size, stride = 2, hidden_in = 64, hidden = 64):
@@ -158,6 +161,9 @@ class Decoder(nn.Module):
         return res_blocks
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
 class TransformerLayer(torch.nn.TransformerEncoderLayer):
     # Pre-LN structure
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu", batch_first = True):
@@ -171,6 +177,7 @@ class TransformerLayer(torch.nn.TransformerEncoderLayer):
         # src_side, attn_weights = self.self_attn(src_norm, src_norm, src_norm, 
         #                             attn_mask=src_mask,
         #                             key_padding_mask=src_key_padding_mask)
+<<<<<<< HEAD
 =======
 class TransformerLayer(transformer.TransformerEncoderLayer):
     # Pre-LN structure
@@ -182,6 +189,8 @@ class TransformerLayer(transformer.TransformerEncoderLayer):
                                     attn_mask=src_mask,
                                     key_padding_mask=src_key_padding_mask)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         src = src + self.dropout1(src_side)
 
         # MLP section
@@ -286,14 +295,19 @@ class CrossAttention(nn.Module):
         self.key_dim = key_dim
         self.value_dim = value_dim
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.freqs_cis = self.precompute_freqs_cis(key_dim, key_dim* 2)
 =======
         
 >>>>>>> backup/old-main
+=======
+        self.freqs_cis = self.precompute_freqs_cis(key_dim, key_dim* 2)
+>>>>>>> main-clean
         # 定义注意力权重参数
         self.query = nn.Linear(query_dim, query_dim)
         self.key = nn.Linear(key_dim, query_dim)
         self.value = nn.Linear(value_dim, value_dim)
+<<<<<<< HEAD
 <<<<<<< HEAD
         self.rope=self.apply_rotary_emb
         
@@ -302,6 +316,11 @@ class CrossAttention(nn.Module):
         
     def forward(self, query_input, key_input, value_input):
 >>>>>>> backup/old-main
+=======
+        self.rope=self.apply_rotary_emb
+        
+    def forward(self, query_input, key_input, value_input,use_rope = False):
+>>>>>>> main-clean
         batch_size, query_len, _ = query_input.size()
         batch_size, key_len, _ = key_input.size()
         batch_size, value_len, _ = value_input.size()
@@ -312,11 +331,17 @@ class CrossAttention(nn.Module):
         value = self.value(value_input).view(batch_size, value_len, 1, self.value_dim).transpose(1, 2)
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         if use_rope:
             query, key = self.rope(query, key,freqs_cis=freqs_cis)
             
 =======
 >>>>>>> backup/old-main
+=======
+        if use_rope:
+            query, key = self.rope(query, key,freqs_cis=freqs_cis)
+            
+>>>>>>> main-clean
         # 计算注意力分数
         attn_scores = torch.matmul(query, key.transpose(-2, -1)) / self.query_dim ** 0.5
         
@@ -327,6 +352,9 @@ class CrossAttention(nn.Module):
         attn_output = torch.matmul(attn_weights, value).transpose(1, 2).contiguous().view(batch_size, query_len, self.value_dim)
         
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         return attn_output, attn_weights
 
     def apply_rotary_emb(self,xq: torch.Tensor,xk: torch.Tensor,freqs_cis: torch.Tensor,):
@@ -356,9 +384,12 @@ class CrossAttention(nn.Module):
         # 则 freqs_cis = [cos(x) + sin(x)i, cos(y) + sin(y)i]
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs) 
         return freqs_cis
+<<<<<<< HEAD
 =======
         return attn_output
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
 if __name__ == '__main__':
     main()

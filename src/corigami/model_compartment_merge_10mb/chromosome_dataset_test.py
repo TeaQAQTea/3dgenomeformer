@@ -43,11 +43,7 @@ class ChromosomeDataset(Dataset):
         self.di_file = di_file
         self.all_intervals = self.get_active_intervals()
         self.intervals=self.all_intervals
-<<<<<<< HEAD
         # self.intervals = self.filter(self.all_intervals, omit_regions)
-=======
-        self.intervals = self.filter(self.all_intervals, omit_regions)
->>>>>>> backup/old-main
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]

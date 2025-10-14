@@ -70,6 +70,7 @@ def init_parser():
                         type=float,
                         help='Learning rate')
 <<<<<<< HEAD
+<<<<<<< HEAD
   parser.add_argument('--di_weight',dest='di_weight',default=0.5,type=float,help='di loss weight')
 
   parser.add_argument('--sign_penalty', dest='sign_penalty', default=0.01,)
@@ -77,6 +78,11 @@ def init_parser():
   parser.add_argument('--di_weight',dest='di_weight',default=0.1,type=float,help='di loss weight')
   parser.add_argument('--comment',dest='comment',default='test',type=str,help='comment')
 >>>>>>> backup/old-main
+=======
+  parser.add_argument('--di_weight',dest='di_weight',default=0.5,type=float,help='di loss weight')
+
+  parser.add_argument('--sign_penalty', dest='sign_penalty', default=0.01,)
+>>>>>>> main-clean
   args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
   for i in range (len(args.feature_log)):
       if args.feature_log[i]=='None':
@@ -136,28 +142,38 @@ class TrainModule(pl.LightningModule):
         super().__init__()
         self.model = self.get_model(args)
 <<<<<<< HEAD
+<<<<<<< HEAD
         #summary(self.model,input_size=(4, 2097152, 7))
 =======
         # summary(self.model,input_size=(4, 2097152, 7))
 >>>>>>> backup/old-main
+=======
+        #summary(self.model,input_size=(4, 2097152, 7))
+>>>>>>> main-clean
         #保存为txt
         if not os.path.exists(args.run_save_path):
             os.makedirs(args.run_save_path)
         with open(f'{args.run_save_path}/model_summary.txt', 'w') as f:
             sys.stdout = f
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         #     summary(self.model,input_size=(4, 2097152, 7))
             sys.stdout = sys.__stdout__
         # 在模型 __init__ 里加两条可学习参数
         self.log_sigma_mat = torch.nn.Parameter(torch.zeros(1))  # 对应 L_mat
         self.log_sigma_di  = torch.nn.Parameter(torch.zeros(1))  # 对应 L_di
         
+<<<<<<< HEAD
 =======
             summary(self.model,input_size=(4, 2097152, 6))
             sys.stdout = sys.__stdout__
         with open(f'{args.run_save_path}/comment.txt', 'w') as f:
             f.write(args.comment)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         self.args = args
         self.save_hyperparameters()
 
@@ -167,27 +183,40 @@ class TrainModule(pl.LightningModule):
     def proc_batch(self, batch):
         seq, features, mat,di, start, end, chr_name, chr_idx = batch
 <<<<<<< HEAD
+<<<<<<< HEAD
         print(di)
 =======
 >>>>>>> backup/old-main
+=======
+        print(di)
+>>>>>>> main-clean
         features = torch.cat([feat.unsqueeze(2) for feat in features], dim = 2)
         inputs = torch.cat([seq, features], dim = 2)
         mat = mat.float()
         di = di.float()
 <<<<<<< HEAD
+<<<<<<< HEAD
         print(di.shape)
 =======
 >>>>>>> backup/old-main
+=======
+        print(di.shape)
+>>>>>>> main-clean
         return inputs, mat, di
     
     def training_step(self, batch, batch_idx):
         inputs, mat ,di = self.proc_batch(batch)
+<<<<<<< HEAD
 <<<<<<< HEAD
         # print(inputs.shape)
         # print("mat.shape",mat.shape)
 =======
 
 >>>>>>> backup/old-main
+=======
+        # print(inputs.shape)
+        # print("mat.shape",mat.shape)
+>>>>>>> main-clean
 
         outputs_hic, outputs_di = self(inputs)
         criterion = torch.nn.MSELoss()
@@ -196,6 +225,9 @@ class TrainModule(pl.LightningModule):
         criterion_di=torch.nn.MSELoss()
         loss_di=criterion_di(outputs_di,di)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         # sign_mismatch_di = (outputs_di * di < 0).float()
         # penalty_di = self.args.sign_penalty * sign_mismatch_di.mean()
         inv_var_mat = torch.exp(-2 * self.log_sigma_mat)  # 1/σ^2
@@ -206,6 +238,7 @@ class TrainModule(pl.LightningModule):
         metrics = {'train_step_loss': loss,'loss_mat':loss_mat,'loss_di':loss_di}
         self.log_dict(metrics, batch_size = inputs.shape[0], prog_bar=True)
         return {'loss': loss,'loss_mat':loss_mat,'loss_di':loss_di}
+<<<<<<< HEAD
 =======
 
         loss=loss_mat+self.args.di_weight*loss_di
@@ -215,6 +248,8 @@ class TrainModule(pl.LightningModule):
         self.log_dict(metrics, batch_size = inputs.shape[0], prog_bar=True)
         return {'loss': loss, 'loss_mat': loss_mat, 'loss_di': loss_di}
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
     def validation_step(self, batch, batch_idx):
         ret_metrics = self._shared_eval_step(batch, batch_idx)
@@ -231,6 +266,9 @@ class TrainModule(pl.LightningModule):
         loss_mat = criterion(outputs_hic, mat)
         criterion_di=torch.nn.MSELoss()
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         
         loss_di=criterion_di(outputs_di,di)
         # sign_mismatch_di = (outputs_di * di < 0).float()
@@ -250,6 +288,7 @@ class TrainModule(pl.LightningModule):
         step_outputs_dict['loss_di'] = [out['loss_di'] for out in step_outputs]
         ret_metrics = self._shared_epoch_end(step_outputs_dict)
         metrics = {'train_loss' : ret_metrics['loss'],'train_loss_mat' : ret_metrics['loss_mat'],'train_loss_di' : ret_metrics['loss_di']
+<<<<<<< HEAD
 =======
         loss_di=criterion_di(outputs_di,di)
         loss=loss_mat+self.args.di_weight*loss_di
@@ -266,11 +305,16 @@ class TrainModule(pl.LightningModule):
                      'train_loss_di' : ret_metrics['loss_di'],
                      'train_loss_mat' : ret_metrics['loss_mat']
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
                   }
         self.log_dict(metrics, prog_bar=True)
 
     def validation_epoch_end(self, step_outputs):
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         step_outputs_dict={}
         step_outputs_dict['loss'] = [out['loss'] for out in step_outputs]
         step_outputs_dict['loss_mat'] = [out['loss_mat'] for out in step_outputs]
@@ -278,6 +322,7 @@ class TrainModule(pl.LightningModule):
         ret_metrics = self._shared_epoch_end(step_outputs_dict)
 
         metrics = {'val_loss' : ret_metrics['loss'],'val_loss_mat' : ret_metrics['loss_mat'],'val_loss_di' : ret_metrics['loss_di']
+<<<<<<< HEAD
 =======
         step_outputs_dict = {'loss': [], 'loss_di': [], 'loss_mat': []}
         for step_output in step_outputs:
@@ -288,11 +333,14 @@ class TrainModule(pl.LightningModule):
                      'val_loss_di' : ret_metrics['loss_di'],
                      'val_loss_mat' : ret_metrics['loss_mat']
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
                   }
         self.log_dict(metrics, prog_bar=True)
 
     def _shared_epoch_end(self, step_outputs):
         loss = torch.tensor(step_outputs['loss']).mean()
+<<<<<<< HEAD
 <<<<<<< HEAD
         loss_mat = torch.tensor(step_outputs['loss_mat']).mean()
         loss_di = torch.tensor(step_outputs['loss_di']).mean()
@@ -302,6 +350,11 @@ class TrainModule(pl.LightningModule):
         loss_mat = torch.tensor(step_outputs['loss_mat']).mean()
         return {'loss' : loss, 'loss_di' : loss_di, 'loss_mat' : loss_mat}
 >>>>>>> backup/old-main
+=======
+        loss_mat = torch.tensor(step_outputs['loss_mat']).mean()
+        loss_di = torch.tensor(step_outputs['loss_di']).mean()
+        return {'loss': loss,'loss_mat':loss_mat,'loss_di':loss_di}
+>>>>>>> main-clean
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), 
@@ -379,10 +432,14 @@ class TrainModule(pl.LightningModule):
     def get_model(self, args):
         model_name =  args.model_type
 <<<<<<< HEAD
+<<<<<<< HEAD
         num_genomic_features = 2
 =======
         num_genomic_features = 1
 >>>>>>> backup/old-main
+=======
+        num_genomic_features = 2
+>>>>>>> main-clean
         ModelClass = getattr(corigami_models, model_name)
         model = ModelClass(num_genomic_features, mid_hidden = 256)
         return model

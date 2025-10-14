@@ -129,9 +129,12 @@ class ChromosomeDataset(Dataset):
         Get intervals for sample data: [[start, end]]
         '''
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         print(len(self.seq))
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         chr_bins = len(self.seq) / self.res
         data_size = (chr_bins - self.sample_bins) / self.stride
         starts = np.arange(0, data_size).reshape(-1, 1) * self.stride

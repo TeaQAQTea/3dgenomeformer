@@ -4,11 +4,14 @@ import numpy as np
 import copy
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
     
 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 class ConvBlock(nn.Module):
     def __init__(self, size, stride = 2, hidden_in = 64, hidden = 64):
         super(ConvBlock, self).__init__()
@@ -35,10 +38,14 @@ class ConvBlock(nn.Module):
         return out
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
 class convsplit(nn.Module):
     def __init__(self, in_channel, output_size = 256, filter_size = 5, num_blocks =5):
         super(convsplit, self).__init__()
         self.filter_size = filter_size
+<<<<<<< HEAD
 =======
 class CrossAttention(nn.Module):
     def __init__(self, embed_size, heads):
@@ -58,6 +65,8 @@ class convsplit(nn.Module):
         self.num_cross_attentions = num_cross_attentions  # Cross-Attention 块的数量
         
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         self.conv_start_seq = nn.Sequential(
                                     nn.Conv1d(5, 32, 3, 1, 1),
                                     nn.BatchNorm1d(32),
@@ -89,6 +98,7 @@ class convsplit(nn.Module):
                                     nn.ReLU(),
                                     )
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.conv_seq = self.get_res_blocks(num_blocks,128)
         self.conv_epi = self.get_res_blocks(num_blocks,128)
 =======
@@ -102,12 +112,17 @@ class convsplit(nn.Module):
 
         # 最后的卷积层
 >>>>>>> backup/old-main
+=======
+        self.conv_seq = self.get_res_blocks(num_blocks,128)
+        self.conv_epi = self.get_res_blocks(num_blocks,128)
+>>>>>>> main-clean
         self.conv_end = nn.Conv1d(256, 256, 1)
     
     def get_res_blocks(self, n, hidden):
         blocks = []
         for i in range(n):
             dilation = 2 ** (i + 1)
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
             blocks.append(ResBlockDilated1D(3, hidden=hidden, dilation=dilation))
@@ -158,6 +173,8 @@ class convsplit(nn.Module):
         for i in range(n):
             dilation = 2 ** (i + 1)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
             blocks.append(ResBlockDilated1D(3, hidden = hidden, dilation = dilation))
         res_blocks = nn.Sequential(*blocks)
         return res_blocks

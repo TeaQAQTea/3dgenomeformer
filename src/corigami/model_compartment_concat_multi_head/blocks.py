@@ -48,19 +48,12 @@ class ResBlockDilated1D(nn.Module):
         return out
     
 class diDecoder(nn.Module):
-<<<<<<< HEAD
     def __init__(self,hidden_dim,save_feature=False):
-=======
-    def __init__(self,hidden_dim,):
->>>>>>> backup/old-main
         super().__init__()
         self.cnn=nn.Sequential(
                nn.Conv1d(hidden_dim,hidden_dim,3,1,1),
                nn.BatchNorm1d(hidden_dim))
-<<<<<<< HEAD
         self.save_feature=save_feature
-=======
->>>>>>> backup/old-main
         num_blocks=5
         self.res_blocks = self.get_res_blocks(num_blocks, 256)
         self.conv1=nn.Sequential(
@@ -75,7 +68,6 @@ class diDecoder(nn.Module):
                 nn.Conv1d(64,32,3,1,1),
                 nn.BatchNorm1d(32),
                 nn.ReLU())  
-<<<<<<< HEAD
         self.fc3=nn.Linear(32,1)
         self.sigmoid=nn.Sigmoid()
         
@@ -96,21 +88,6 @@ class diDecoder(nn.Module):
         else:
             return x
 
-=======
-        self.fc3=nn.Linear(256,1)
-        
-
-    def forward(self, x):
-        # x=self.cnn(x)
-        # x=self.res_blocks(x)
-        # x=self.conv1(x)
-        # x=self.conv2(x)
-        # x=self.conv3(x)
-        x=x.permute(0,2,1).contiguous()
-        x=self.fc3(x).squeeze(2)
-        # print(x.shape)
-        return x
->>>>>>> backup/old-main
     
     def get_res_blocks(self, n, hidden):
         blocks = []

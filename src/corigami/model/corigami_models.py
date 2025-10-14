@@ -2,10 +2,14 @@ import torch
 import torch.nn as nn
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import blocks_xattention as blocks
 =======
 import blocks as blocks
 >>>>>>> backup/old-main
+=======
+import blocks_xattention as blocks
+>>>>>>> main-clean
 
 class ConvModel(nn.Module):
     def __init__(self, num_genomic_features, mid_hidden = 256):
@@ -51,10 +55,13 @@ class ConvTransModel(ConvModel):
         self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
         self.decoder = blocks.Decoder(mid_hidden * 2)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         self.linear1 = nn.Linear(mid_hidden*2, mid_hidden*4)
         self.linear2 = nn.Linear(mid_hidden*4, mid_hidden*1)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         self.record_attn = record_attn
     
     def forward(self, x):
@@ -62,6 +69,7 @@ class ConvTransModel(ConvModel):
         Input feature:
         batch_size, length * res, feature_dim
         '''
+<<<<<<< HEAD
 <<<<<<< HEAD
         x = self.move_feature_forward(x).float()
         x = self.encoder(x)
@@ -74,11 +82,17 @@ class ConvTransModel(ConvModel):
         x = self.move_feature_forward(x)
         
 >>>>>>> backup/old-main
+=======
+        x = self.move_feature_forward(x).float()
+        x = self.encoder(x)
+        x = self.move_feature_forward(x)
+>>>>>>> main-clean
         if self.record_attn:
             x, attn_weights = self.attn(x)
         else:
             x = self.attn(x)
         x = self.move_feature_forward(x)
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         x = torch.cat([x, local_feature], dim = 1)
@@ -87,6 +101,8 @@ class ConvTransModel(ConvModel):
         x = self.linear2(x)
         x = self.move_feature_forward(x)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         x = self.diagonalize(x)
         x = self.decoder(x).squeeze(1)
         # print(x.shape)

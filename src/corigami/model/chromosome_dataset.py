@@ -23,20 +23,28 @@ class ChromosomeDataset(Dataset):
         omit_regions (list of tuples): start and end of excluded regions
     '''
 <<<<<<< HEAD
+<<<<<<< HEAD
     def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None):
 =======
     def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True):
 >>>>>>> backup/old-main
+=======
+    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None):
+>>>>>>> main-clean
         self.use_aug = use_aug
         self.res = 10000 # 10kb resolution
         self.bins = 209.7152 # 209.7152 bins 2097152 bp
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
         self.sample_bins = 500
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.stride = 50 # bins
 =======
         self.stride = 50# bins
 >>>>>>> backup/old-main
+=======
+        self.stride = 50 # bins
+>>>>>>> main-clean
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')
@@ -44,6 +52,9 @@ class ChromosomeDataset(Dataset):
         self.seq = data_feature.SequenceFeature(path = f'{celltype_root}/../dna_sequence/{chr_name}.fa.gz')
         self.genomic_features = feature_list
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         if mode == 'finetune':
             self.mat = data_feature.HiCFeature(path = f'{celltype_root}/finetune_hic_matrix/{chr_name}.npz')
         else:
@@ -56,6 +67,7 @@ class ChromosomeDataset(Dataset):
             self.intervals = self.filter2(self.all_intervals, finetune_regions)
         else:
             self.intervals = self.filter(self.all_intervals, omit_regions)
+<<<<<<< HEAD
 =======
         self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix/{chr_name}.npz')
 
@@ -66,6 +78,8 @@ class ChromosomeDataset(Dataset):
         self.intervals=self.all_intervals
         self.intervals = self.filter(self.all_intervals, omit_regions)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]
@@ -148,9 +162,12 @@ class ChromosomeDataset(Dataset):
         Get intervals for sample data: [[start, end]]
         '''
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         print(len(self.seq))
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         chr_bins = len(self.seq) / self.res
         data_size = (chr_bins - self.sample_bins) / self.stride
         starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
@@ -169,6 +186,9 @@ class ChromosomeDataset(Dataset):
                 valid_intervals.append([start, end])
         return valid_intervals
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
     
     def filter2(self, intervals, fine_tune_regions):
         """
@@ -186,9 +206,12 @@ class ChromosomeDataset(Dataset):
                 valid_intervals.append([start, end])
         return valid_intervals
     
+<<<<<<< HEAD
 =======
 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
     def encode_seq(self, seq):
         ''' 
         encode dna to onehot (n x 5)

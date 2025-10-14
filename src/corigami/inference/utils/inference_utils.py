@@ -6,7 +6,7 @@ import torch
 
 from corigami.inference.utils.model_utils import load_default
 
-def preprocess_default(seq, ctcf, atac):
+def preprocess_default(seq, ctcf, atac,log_transform ):
     # Process sequence
     seq = torch.tensor(seq).unsqueeze(0) 
     # Normailze ctcf and atac-seq

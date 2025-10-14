@@ -70,11 +70,14 @@ def init_parser():
                         type=str,
                         help='model path')
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   parser.add_argument('--chromosome', dest='chromosome', default='chr1',
                         type=str,
                         help='chromosome')
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
 
   args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
@@ -99,9 +102,12 @@ def init_test(args):
     # Logger
     #使用tensorboard记录
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     print("aaaaaaaa")
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
     print(args.run_save_path)
     tb_logger = pl.loggers.TensorBoardLogger(save_dir = f'{args.run_save_path}/tb')
     
@@ -115,9 +121,13 @@ def init_test(args):
     output=trainer.test(model, testloader)
     print(output)
 <<<<<<< HEAD
+<<<<<<< HEAD
     
 =======
 >>>>>>> backup/old-main
+=======
+    
+>>>>>>> main-clean
     # #保存成h5
     # import h5py
     # output_path = f'{args.run_save_path}/output_{timestamp}.h5'
@@ -133,22 +143,32 @@ class TrainModule(pl.LightningModule):
         super().__init__()
         self.model = self.get_model(args)
 <<<<<<< HEAD
+<<<<<<< HEAD
         # summary(self.model,input_size=(4, 2097152, 5+args.feature_num))
 =======
         summary(self.model,input_size=(4, 2097152, 5+args.feature_num))
 >>>>>>> backup/old-main
+=======
+        # summary(self.model,input_size=(4, 2097152, 5+args.feature_num))
+>>>>>>> main-clean
         #保存为txt
         self.args = args
         print(self.args.run_save_path)
         print(self.args)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         self.log_sigma_mat = torch.nn.Parameter(torch.zeros(1))  # 对应 L_mat
         self.log_sigma_di  = torch.nn.Parameter(torch.zeros(1))  # 对应 L_di
         self.save_hyperparameters()
         
+<<<<<<< HEAD
 =======
         self.save_hyperparameters()
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
     def forward(self, x):
         return self.model(x)
@@ -185,12 +205,17 @@ class TrainModule(pl.LightningModule):
                        'di_target':self._shared_eval_step(batch, batch_idx)['di_target'],
                        'di_predict':self._shared_eval_step(batch, batch_idx)['di_predict'],
 <<<<<<< HEAD
+<<<<<<< HEAD
                         'feature':self._shared_eval_step(batch, batch_idx)['feature']}
         # pearson_r=self._shared_eval_step(batch, batch_idx)['pearson_r']   
 =======
                        'feature':self._shared_eval_step(batch, batch_idx)['feature']}
         
 >>>>>>> backup/old-main
+=======
+                        'feature':self._shared_eval_step(batch, batch_idx)['feature']}
+        # pearson_r=self._shared_eval_step(batch, batch_idx)['pearson_r']   
+>>>>>>> main-clean
         
         start=self._shared_eval_step(batch, batch_idx)['start']
         end=self._shared_eval_step(batch, batch_idx)['end']
@@ -203,10 +228,14 @@ class TrainModule(pl.LightningModule):
     def _shared_eval_step(self, batch, batch_idx):
         inputs, mat,di,start, end, chr_name, chr_idx = self.proc_batch(batch)
 <<<<<<< HEAD
+<<<<<<< HEAD
         outputs,outputs_di,feature,attention = self(inputs)
 =======
         outputs,outputs_di,attention,feature = self(inputs)
 >>>>>>> backup/old-main
+=======
+        outputs,outputs_di,feature,attention = self(inputs)
+>>>>>>> main-clean
         criterion = torch.nn.MSELoss()
         loss = criterion(outputs, mat)
         loss_di = criterion(outputs_di, di)
@@ -350,10 +379,14 @@ class TrainModule(pl.LightningModule):
                                 mode = mode,
                                 include_sequence = True,
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 include_genomic_features = True)
 =======
                                 include_genomic_features = True,chrom=args.chromosome)
 >>>>>>> backup/old-main
+=======
+                                include_genomic_features = True)
+>>>>>>> main-clean
 
         # Record length for printing validation image
         if mode == 'val':

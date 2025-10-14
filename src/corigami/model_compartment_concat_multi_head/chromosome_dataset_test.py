@@ -27,13 +27,8 @@ class ChromosomeDataset(Dataset):
         self.res = 10000 # 10kb resolution
         self.bins = 209.7152*8 # 209.7152 bins 2097152 bp
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
-<<<<<<< HEAD
         self.sample_bins = 256*8
         self.stride =256# bins
-=======
-        self.sample_bins = 500
-        self.stride =256*8# bins
->>>>>>> backup/old-main
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')
@@ -48,11 +43,7 @@ class ChromosomeDataset(Dataset):
         self.di_file = di_file
         self.all_intervals = self.get_active_intervals()
         self.intervals=self.all_intervals
-<<<<<<< HEAD
         # self.intervals = self.filter(self.all_intervals, omit_regions)
-=======
-        self.intervals = self.filter(self.all_intervals, omit_regions)
->>>>>>> backup/old-main
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]

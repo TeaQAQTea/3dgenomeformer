@@ -53,14 +53,20 @@ class diDecoder(nn.Module):
         self.cnn=nn.Sequential(
                nn.Conv1d(hidden_dim,hidden_dim,3,1,1),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
                nn.BatchNorm1d(hidden_dim),
                nn.ReLU())
         
         num_blocks=3
+<<<<<<< HEAD
 =======
                nn.BatchNorm1d(hidden_dim))
         num_blocks=5
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         self.res_blocks = self.get_res_blocks(num_blocks, 256)
         self.conv1=nn.Sequential(
                 nn.Conv1d(256,128,3,1,1),
@@ -86,6 +92,9 @@ class diDecoder(nn.Module):
         x=self.conv3(x)
         x=x.permute(0,2,1)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
 
         output=self.fc3(x).squeeze(2)
         if self.save_features:
@@ -97,6 +106,7 @@ class diDecoder(nn.Module):
         blocks = []
         for i in range(n):
             dilation = 2 * (i + 1)
+<<<<<<< HEAD
 =======
         out=self.fc3(x).squeeze(2)
         if self.save_features:
@@ -109,6 +119,8 @@ class diDecoder(nn.Module):
         for i in range(n):
             dilation = 2 ** (i + 1)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
             blocks.append(ResBlockDilated1D(3, hidden = hidden, dilation = dilation))
         res_blocks = nn.Sequential(*blocks)
         return res_blocks
@@ -168,6 +180,7 @@ class EncoderSplit(Encoder):
         epi = x[:, 5:, :]
         seq = self.res_blocks_seq(self.conv_start_seq(seq))
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
         epi = self.res_blocks_epi(self.conv_start_epi(epi))
@@ -178,6 +191,11 @@ class EncoderSplit(Encoder):
         epi = self.res_blocks_epi(self.conv_start_epi(epi))
         print('epi', epi.shape)
 >>>>>>> backup/old-main
+=======
+
+
+        epi = self.res_blocks_epi(self.conv_start_epi(epi))
+>>>>>>> main-clean
 
         x = torch.cat([seq, epi], dim = 1)
         out = self.conv_end(x)

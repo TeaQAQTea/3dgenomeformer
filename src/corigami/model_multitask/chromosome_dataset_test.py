@@ -29,10 +29,14 @@ class ChromosomeDataset(Dataset):
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
         self.sample_bins = 500
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.stride =25# bins
 =======
         self.stride = 25# bins
 >>>>>>> backup/old-main
+=======
+        self.stride =25# bins
+>>>>>>> main-clean
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')
@@ -135,10 +139,14 @@ class ChromosomeDataset(Dataset):
         print(len(self.seq))
         chr_bins = len(self.seq) / self.res
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         data_size = (chr_bins - self.sample_bins) / self.stride
         starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
         intervals_bin = np.append(starts, starts + self.sample_bins, axis=1)
         intervals = intervals_bin * self.res
+<<<<<<< HEAD
 =======
         data_size = (chr_bins - self.sample_bins) / self.stride+1
         starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
@@ -150,6 +158,8 @@ class ChromosomeDataset(Dataset):
             intervals[-1, 0] = len(self.seq) - self.sample_bins * self.res
             intervals[-1, 1] = len(self.seq)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         return intervals.astype(int)
 
     def filter(self, intervals, omit_regions):

@@ -49,10 +49,14 @@ class ResBlockDilated1D(nn.Module):
     
 class diDecoder(nn.Module):
 <<<<<<< HEAD
+<<<<<<< HEAD
     def __init__(self,hidden_dim,):
 =======
     def __init__(self,hidden_dim,save_features=False):
 >>>>>>> backup/old-main
+=======
+    def __init__(self,hidden_dim,):
+>>>>>>> main-clean
         super().__init__()
         self.cnn=nn.Sequential(
                nn.Conv1d(hidden_dim,hidden_dim,3,1,1),
@@ -73,9 +77,12 @@ class diDecoder(nn.Module):
                 nn.ReLU())  
         self.fc3=nn.Linear(256,1)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         self.save_features=save_features
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         
 
     def forward(self, x):
@@ -85,10 +92,14 @@ class diDecoder(nn.Module):
         # x=self.conv2(x)
         # x=self.conv3(x)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         x=x[0].permute(0,2,1).contiguous()
         x=self.fc3(x).squeeze(2)
         # print(x.shape)
         return x
+<<<<<<< HEAD
 =======
         x=x.permute(0,2,1)
 
@@ -98,6 +109,8 @@ class diDecoder(nn.Module):
         else:
             return output
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
     
     def get_res_blocks(self, n, hidden):
         blocks = []
@@ -162,11 +175,15 @@ class EncoderSplit(Encoder):
         epi = x[:, 5:, :]
         seq = self.res_blocks_seq(self.conv_start_seq(seq))
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         # print('seq', seq.shape)
 
 
         epi = self.res_blocks_epi(self.conv_start_epi(epi))
         # print('epi', epi.shape)
+<<<<<<< HEAD
 =======
         print('seq', seq.shape)
 
@@ -174,6 +191,8 @@ class EncoderSplit(Encoder):
         epi = self.res_blocks_epi(self.conv_start_epi(epi))
         print('epi', epi.shape)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
         x = torch.cat([seq, epi], dim = 1)
         out = self.conv_end(x)

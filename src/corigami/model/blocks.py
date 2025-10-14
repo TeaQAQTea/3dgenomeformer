@@ -8,26 +8,15 @@ class ConvBlock(nn.Module):
         super(ConvBlock, self).__init__()
         pad_len = int(size / 2)
         self.scale = nn.Sequential(
-<<<<<<< HEAD
                         nn.Conv1d(hidden_in, hidden, size, stride, pad_len),
-=======
-                        nn.Conv1d(hidden_in, hidden, size, stride, pad_len,groups=4),
->>>>>>> backup/old-main
                         nn.BatchNorm1d(hidden),
                         nn.ReLU(),
                         )
         self.res = nn.Sequential(
-<<<<<<< HEAD
                         nn.Conv1d(hidden, hidden, size, padding = pad_len),
                         nn.BatchNorm1d(hidden),
                         nn.ReLU(),
                         nn.Conv1d(hidden, hidden, size, padding = pad_len),
-=======
-                        nn.Conv1d(hidden, hidden, size, padding = pad_len,groups=4),
-                        nn.BatchNorm1d(hidden),
-                        nn.ReLU(),
-                        nn.Conv1d(hidden, hidden, size, padding = pad_len,groups=4),
->>>>>>> backup/old-main
                         nn.BatchNorm1d(hidden),
                         )
         self.relu = nn.ReLU()
@@ -93,17 +82,11 @@ class EncoderSplit(Encoder):
         seq = x[:, :5, :]
         epi = x[:, 5:, :]
         seq = self.res_blocks_seq(self.conv_start_seq(seq))
-<<<<<<< HEAD
         print('seq', seq.shape)
 
 
         epi = self.res_blocks_epi(self.conv_start_epi(epi))
         print('epi', epi.shape)
-=======
-
-
-        epi = self.res_blocks_epi(self.conv_start_epi(epi))
->>>>>>> backup/old-main
 
         x = torch.cat([seq, epi], dim = 1)
         out = self.conv_end(x)

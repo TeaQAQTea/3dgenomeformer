@@ -7,6 +7,7 @@ import pytorch_lightning.callbacks as callbacks
 
 import corigami.model.corigami_models as corigami_models
 <<<<<<< HEAD
+<<<<<<< HEAD
 import genome_dataset
 from torchinfo import summary
 import os
@@ -16,6 +17,11 @@ from torchinfo import summary
 import os
 import h5py
 >>>>>>> backup/old-main
+=======
+import genome_dataset
+from torchinfo import summary
+import os
+>>>>>>> main-clean
 
 
 def main():
@@ -133,12 +139,15 @@ class TrainModule(pl.LightningModule):
         print(self.args)
         self.save_hyperparameters()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         self.output_path =f'{self.args.run_save_path}/output.h5'
 
         if os.path.exists(self.output_path):
             os.remove(self.output_path)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
     def forward(self, x):
         return self.model(x)
@@ -166,6 +175,9 @@ class TrainModule(pl.LightningModule):
         ret_metrics = self._shared_eval_step(batch, batch_idx)
         return ret_metrics
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
 
     def test_step(self, batch, batch_idx):
         # print(self._shared_eval_step(batch, batch_idx)['loss'])
@@ -179,6 +191,7 @@ class TrainModule(pl.LightningModule):
         attention=self._shared_eval_step(batch, batch_idx)['attention']
         # print(ret_metrics)
         return ret_metrics,start,end,chr_name,chr_idx,attention
+<<<<<<< HEAD
 =======
     def test_step(self, batch, batch_idx):
         # print(self._shared_eval_step(batch, batch_idx)['loss'])
@@ -216,6 +229,8 @@ class TrainModule(pl.LightningModule):
         # print(ret_metrics)
         return ret_metrics
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
     def _shared_eval_step(self, batch, batch_idx):
         inputs, mat,start, end, chr_name, chr_idx = self.proc_batch(batch)
@@ -258,6 +273,9 @@ class TrainModule(pl.LightningModule):
     def test_epoch_end(self, step_outputs):
         step_outputs_dict = {}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         print(step_outputs)
         step_outputs_dict['loss'] = [out[0]['loss'] for out in step_outputs]
         # step_outputs_dict['pearson_r'] = [out['pearson_r'] for out in step_outputs]
@@ -315,6 +333,7 @@ class TrainModule(pl.LightningModule):
         # pearsonr=pearsonr.detach()
         # print({'loss' : loss,'target':target,'predict':predict})
         return {'loss' : loss,'target':target,'predict':predict}
+<<<<<<< HEAD
 =======
     # def test_step(self, batch, batch_idx):
     #     # print(self._shared_eval_step(batch, batch_idx)['loss'])
@@ -427,6 +446,8 @@ class TrainModule(pl.LightningModule):
     #     # print({'loss' : loss,'target':target,'predict':predict})
     #     return {'loss' : loss,'target':target,'predict':predict}
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), 

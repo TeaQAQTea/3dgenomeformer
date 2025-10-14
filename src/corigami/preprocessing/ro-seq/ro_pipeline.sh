@@ -51,13 +51,8 @@ module load samtools/1.9
 
 # cd ../
 
-<<<<<<< HEAD
 # echo "All files downloaded, merging"
 # # Cat different replicates
-=======
-echo "All files downloaded, merging"
-## Cat different replicates
->>>>>>> backup/old-main
 # cat ./fastq/rep1/*  > ./fastq/merged1.fastq.gz
 # cat ./fastq/end2/rep1/* ./fastq/end2/rep2/* > ./fastq/end2/merged2.fastq.gz
 
@@ -71,7 +66,6 @@ echo "All files downloaded, merging"
 # seqtk sample -s 2021 ./fastq/end2/merged2.fastq.gz 40000000 | gzip > ./fastq/sub_merged_R2.fastq.gz
 # zcat ./fastq/sub_merged_R2.fastq.gz | echo "sub end 2 reads: $((`wc -l`/4))"
 
-<<<<<<< HEAD
 echo "Files merged, running sns pipeline"
 # mkdir -p sns
 # cd sns
@@ -81,14 +75,3 @@ echo "Files merged, running sns pipeline"
 # sns/run atac
 
 # echo "Pipeline job submitted"
-=======
-# echo "Files merged, running sns pipeline"
-# mkdir -p sns
-cd sns
-# git clone --depth 1 https://github.com/igordot/sns
-sns/generate-settings hg38
-sns/gather-fastqs ../fastq
-sns/run chip
-
-echo "Pipeline job submitted"
->>>>>>> backup/old-main

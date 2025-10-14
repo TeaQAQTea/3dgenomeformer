@@ -45,11 +45,7 @@ class ConvTransModel(ConvModel):
         print('Initializing ConvTransModel')
         self.encoder = blocks.EncoderSplit(num_genomic_features, output_size = mid_hidden, num_blocks = 12)
         self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
-<<<<<<< HEAD
         self.diDecoder = blocks.diDecoder(256 )
-=======
-        self.diDecoder = blocks.diDecoder(mid_hidden )
->>>>>>> backup/old-main
         self.decoder = blocks.Decoder(mid_hidden * 2)
         self.record_attn = record_attn
     

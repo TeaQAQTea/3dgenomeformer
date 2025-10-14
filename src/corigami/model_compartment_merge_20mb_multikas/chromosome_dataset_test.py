@@ -26,10 +26,14 @@ class ChromosomeDataset(Dataset):
         self.use_aug = use_aug
         self.res = 100000 # 10kb resolution
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.bins = 209.7152/2 # 209.7152 bins 2097152 bp
 =======
         self.bins = 209.7152 # 209.7152 bins 2097152 bp
 >>>>>>> backup/old-main
+=======
+        self.bins = 209.7152/2 # 209.7152 bins 2097152 bp
+>>>>>>> main-clean
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
         self.sample_bins = 300
         self.stride =25# bins

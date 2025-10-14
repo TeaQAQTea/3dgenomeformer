@@ -25,16 +25,22 @@ class ChromosomeDataset(Dataset):
     def __init__(self, celltype_root, chr_name, omit_regions, di_file, feature_list, use_aug = True):
         self.use_aug = use_aug
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         self.res = 10000 # 10kb resolution
         self.bins = 2097.152 # 209.7152 bins 2097152 bp
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
         self.sample_bins = 3000
+<<<<<<< HEAD
 =======
         self.res = 8192 # 10kb resolution
         self.bins = 256 # 209.7152 bins 2097152 bp
         self.image_scale = 256 # IMPORTANT, scale 210 to 256
         self.sample_bins = 500
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         self.stride =50# bins
         self.chr_name = chr_name
 
@@ -121,9 +127,12 @@ class ChromosomeDataset(Dataset):
         '''
         # Sequence processing
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         print(start, end)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         seq = self.seq.get(start, end)
         # Features processing
         features = [item.get(self.chr_name, start, end) for item in self.genomic_features]

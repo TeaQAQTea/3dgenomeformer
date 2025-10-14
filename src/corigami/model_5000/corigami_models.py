@@ -32,18 +32,18 @@ class ConvModel(nn.Module):
         return x.transpose(1, 2).contiguous()
 
     def diagonalize(self, x):
-        x_i = x.unsqueeze(2).repeat(1, 1, 256, 1)
-        x_j = x.unsqueeze(3).repeat(1, 1, 1, 256)
+        x_i = x.unsqueeze(2).repeat(1, 1, 512, 1)
+        x_j = x.unsqueeze(3).repeat(1, 1, 1, 512)
         input_map = torch.cat([x_i, x_j], dim = 1)
         return input_map
 
 
 class ConvTransModel(ConvModel):
     
-    def __init__(self, num_genomic_features, mid_hidden = 256, record_attn = False):
+    def __init__(self, num_genomic_features, mid_hidden = 512, record_attn = False):
         super(ConvTransModel, self).__init__(num_genomic_features)
         print('Initializing ConvTransModel')
-        self.encoder = blocks.EncoderSplit(num_genomic_features, output_size = mid_hidden, num_blocks = 11)
+        self.encoder = blocks.EncoderSplit(num_genomic_features, output_size = mid_hidden, num_blocks = 12)
         self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
         self.decoder = blocks.Decoder(mid_hidden * 2)
         self.record_attn = record_attn

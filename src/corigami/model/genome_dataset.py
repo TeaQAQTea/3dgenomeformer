@@ -2,10 +2,14 @@ import pandas as pd
 from torch.utils.data import Dataset
 from chromosome_dataset import ChromosomeDataset
 <<<<<<< HEAD
+<<<<<<< HEAD
 import data_feature as data_feature
 =======
 import corigami.data.data_feature as data_feature
 >>>>>>> backup/old-main
+=======
+import data_feature as data_feature
+>>>>>>> main-clean
 
 class GenomeDataset(Dataset):
     '''
@@ -27,11 +31,15 @@ class GenomeDataset(Dataset):
 
         if mode != 'train': self.use_aug = False # Set augmentation
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         if mode == 'finetune':
             self.finetune_region = self.proc_centrotelo(f'{celltype_root}/finetune_region.bed')
         # Assign train/val/test chromosomes
         self.chr_names = self.get_chr_names(genome_assembly)
         if mode == 'train':
+<<<<<<< HEAD
 =======
 
         # Assign train/val/test chromosomes
@@ -39,6 +47,8 @@ class GenomeDataset(Dataset):
         if mode == 'train':
             # self.chr_names =['chr23']
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
             self.chr_names.remove('chr10')
             self.chr_names.remove('chr15')
             self.chr_names.remove('chrX') # chrX removed for consistency
@@ -47,10 +57,15 @@ class GenomeDataset(Dataset):
         elif mode == 'test':
             self.chr_names = ['chr15']
 <<<<<<< HEAD
+<<<<<<< HEAD
         elif mode == 'finetune':
             self.chr_names = list(self.finetune_region.keys())
 =======
 >>>>>>> backup/old-main
+=======
+        elif mode == 'finetune':
+            self.chr_names = list(self.finetune_region.keys())
+>>>>>>> main-clean
         else:
             raise Exception(f'Unknown mode {mode}')
 
@@ -60,6 +75,7 @@ class GenomeDataset(Dataset):
         # Load regions to be ignored
         self.centrotelo_dict = self.proc_centrotelo(f'{celltype_root}/../centrotelo.bed')
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         # Load chromsome_datasets as part of the dictionary
         self.chr_data, self.lengths = self.load_chrs(self.chr_names, self.genomic_features,mode)
@@ -67,6 +83,11 @@ class GenomeDataset(Dataset):
         # Load chromsome_datasets as part of the dictionary
         self.chr_data, self.lengths = self.load_chrs(self.chr_names, self.genomic_features)
 >>>>>>> backup/old-main
+=======
+        
+        # Load chromsome_datasets as part of the dictionary
+        self.chr_data, self.lengths = self.load_chrs(self.chr_names, self.genomic_features,mode)
+>>>>>>> main-clean
         # Build chrmosome lookup table from the genome
         self.ranges = self.get_ranges(self.lengths)
 
@@ -75,11 +96,14 @@ class GenomeDataset(Dataset):
         chr_name, chr_idx = self.get_chr_idx(idx)
         seq, features, mat, start, end = self.chr_data[chr_name][chr_idx]
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         if chr_name[:3] == 'chr':
             chr_name = chr_name[3:] # Remove 'chr' from the name
         chr_name=int(chr_name) # Check if the name is a number
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         if self.include_sequence:
             if self.include_genomic_features: # Both
                 outputs = seq, features, mat, start, end, chr_name, chr_idx
@@ -94,12 +118,17 @@ class GenomeDataset(Dataset):
     def __len__(self):
         return sum(self.lengths)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def load_chrs(self, chr_names, genomic_features, mode):
 =======
         
     def load_chrs(self, chr_names, genomic_features):
 >>>>>>> backup/old-main
+=======
+
+    def load_chrs(self, chr_names, genomic_features, mode):
+>>>>>>> main-clean
         '''
         Load chromosome data into a dictionary
         '''
@@ -109,14 +138,20 @@ class GenomeDataset(Dataset):
         for chr_name in chr_names:
             omit_regions = self.centrotelo_dict[chr_name]
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
             if mode == 'finetune':
                 finetune_regions = self.finetune_region[chr_name]
                 chr_data_dict[chr_name] = ChromosomeDataset(self.data_root, chr_name, omit_regions, genomic_features, self.use_aug, mode, finetune_regions)
             else:
                 chr_data_dict[chr_name] = ChromosomeDataset(self.data_root, chr_name, omit_regions, genomic_features, self.use_aug, mode)
+<<<<<<< HEAD
 =======
             chr_data_dict[chr_name] = ChromosomeDataset(self.data_root, chr_name, omit_regions, genomic_features, self.use_aug)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
             lengths.append(len(chr_data_dict[chr_name]))
         print('Chromosome datasets loaded')
         return chr_data_dict, lengths

@@ -67,10 +67,14 @@ def init_parser():
   parser.add_argument('--log',dest='feature_log', nargs='+',default=['log','log'])
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   parser.add_argument('--lr', dest='lr', default=2e-4,
 =======
   parser.add_argument('--lr', dest='lr', default=2e-5,
 >>>>>>> backup/old-main
+=======
+  parser.add_argument('--lr', dest='lr', default=2e-4,
+>>>>>>> main-clean
                         type=float,
                         help='Learning rate')
   parser.add_argument('--weight', dest='weight', default=2)
@@ -88,10 +92,14 @@ def init_training(args):
                                         patience=args.trainer_patience,
                                         verbose=False,
 <<<<<<< HEAD
+<<<<<<< HEAD
                                         mode="max")
 =======
                                         mode="min")
 >>>>>>> backup/old-main
+=======
+                                        mode="max")
+>>>>>>> main-clean
     #时间戳
     import time
     timestamp = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
@@ -186,9 +194,12 @@ class TrainModule(pl.LightningModule):
         loss = criterion(outputs, mat)
         pearsonr =self.get_pearsonr(outputs,mat)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         # print(pearsonr)
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         return {'loss':loss,'pearsonr':pearsonr}
 
     # Collect epoch statistics
@@ -213,9 +224,12 @@ class TrainModule(pl.LightningModule):
     def _shared_epoch_end(self, step_outputs):
         loss = torch.tensor(step_outputs['loss']).mean()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         print(torch.tensor(step_outputs['pearsonr']))
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         pearsonr = torch.tensor(step_outputs['pearsonr']).mean()
         return {'loss' : loss,'pearsonr':pearsonr}
 
@@ -307,10 +321,14 @@ class TrainModule(pl.LightningModule):
             output_mean = torch.mean(output[i])
             input_std = torch.std(input[i])
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
             if input_std==0:
                 pearsonr[i]=0
             else:
                 output_std = torch.std(output[i])
+<<<<<<< HEAD
 =======
             output_std = torch.std(output[i])
             if input_std==0 or output_std==0:
@@ -319,6 +337,8 @@ class TrainModule(pl.LightningModule):
             else:
                 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
                 input_normalized = (input[i] - input_mean) / input_std
                 output_normalized = (output[i] - output_mean) / output_std
                 pearsonr[i] = torch.mean(input_normalized * output_normalized)
@@ -326,6 +346,9 @@ class TrainModule(pl.LightningModule):
         return pearsonr_batch
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
     # def change_capture_loss(self,y_true, y_pred):
     #     # 计算真实值和预测值之间的变化差异
     #     # 计算真实值和预测值之间的变化差异
@@ -338,6 +361,7 @@ class TrainModule(pl.LightningModule):
     #     dx_diff = torch.pow(dx_true - dx_pred, 2)
         
     #     return torch.mean(dy_diff) + torch.mean(dx_diff)
+<<<<<<< HEAD
 =======
     def get_diagonal(self, input):
         diagonal_region_pixels = []
@@ -348,5 +372,7 @@ class TrainModule(pl.LightningModule):
         diagonal_region_pixels = torch.tensor(diagonal_region_pixels)
         return diagonal_region_pixels 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 if __name__ == '__main__':
     main()

@@ -27,16 +27,22 @@ class GenomeDataset(Dataset):
         self.chr_names = self.get_chr_names(genome_assembly)
         if mode == 'train':
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
             self.chr_names =['chr22']
             # self.chr_names.remove('chr10')
             # self.chr_names.remove('chr15')
             # self.chr_names.remove('chrX') # chrX removed for consistency
+<<<<<<< HEAD
 =======
             # self.chr_names =['chr22']
             self.chr_names.remove('chr10')
             self.chr_names.remove('chr15')
             self.chr_names.remove('chrX') # chrX removed for consistency
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         elif mode == 'val':
             self.chr_names = ['chr10']
         elif mode == 'test':
@@ -46,10 +52,14 @@ class GenomeDataset(Dataset):
 
         # Load di values
 <<<<<<< HEAD
+<<<<<<< HEAD
         di_dicts = {'file_name': 'normed_compartment_same.bw', 'norm':None}
 =======
         di_dicts = {'file_name': 'di_values.bw', 'norm':None}
 >>>>>>> backup/old-main
+=======
+        di_dicts = {'file_name': 'normed_compartment_same.bw', 'norm':None}
+>>>>>>> main-clean
         self.di = self.load_di(f'{celltype_root}/genomic_features', di_dicts)
         # Load genomewide features
         self.genomic_features = self.load_features(f'{celltype_root}/genomic_features', feat_dicts)

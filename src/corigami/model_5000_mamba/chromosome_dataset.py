@@ -27,17 +27,12 @@ class ChromosomeDataset(Dataset):
         self.res = 5000 # 5kb resolution
         self.bins = 209.7152*2 # 209.7152 bins 2097152 bp
         self.image_scale = 512 # IMPORTANT, scale 210 to 256
-<<<<<<< HEAD
-        self.sample_bins = 1000
-        self.stride =100 # bins
-=======
         if mode == 'finetune':
             self.sample_bins = 600
             self.stride = 50 # bins
         else:
             self.sample_bins = 1000
             self.stride =100 # bins
->>>>>>> backup/old-main
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')
@@ -51,16 +46,8 @@ class ChromosomeDataset(Dataset):
 
         self.omit_regions = omit_regions
         self.check_length() # Check data length
-<<<<<<< HEAD
-        self.all_intervals = self.get_active_intervals()
-        if mode == 'finetune':
-            self.intervals = self.filter2(self.all_intervals, finetune_regions)
-        else:
-            self.intervals = self.filter(self.all_intervals, omit_regions)
-=======
         self.all_intervals = self.get_active_intervals(mode, finetune_regions)
         self.intervals = self.filter(self.all_intervals, omit_regions)
->>>>>>> backup/old-main
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]
@@ -138,17 +125,6 @@ class ChromosomeDataset(Dataset):
         mat = np.log(mat + 1)
         return seq, features, mat
 
-<<<<<<< HEAD
-    def get_active_intervals(self):
-        '''
-        Get intervals for sample data: [[start, end]]
-        '''
-        chr_bins = len(self.seq) / self.res
-        data_size = (chr_bins - self.sample_bins) / self.stride
-        starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
-        intervals_bin = np.append(starts, starts + self.sample_bins, axis=1)
-        intervals = intervals_bin * self.res
-=======
     def get_active_intervals(self, mode, finetune_regions=None):
         '''
         Get intervals for sample data: [[start, end]]
@@ -178,7 +154,6 @@ class ChromosomeDataset(Dataset):
             starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
             intervals_bin = np.append(starts, starts + self.sample_bins, axis=1)
             intervals = intervals_bin * self.res
->>>>>>> backup/old-main
         return intervals.astype(int)
 
     def filter(self, intervals, omit_regions):
@@ -200,11 +175,8 @@ class ChromosomeDataset(Dataset):
         """
         valid_intervals = []
         for start, end in intervals:
-<<<<<<< HEAD
-=======
             print(fine_tune_regions)
             print("1111",start,end)
->>>>>>> backup/old-main
             # 判断是否完全被任意一个 fine_tune 区间包含
             start_cond = fine_tune_regions[:, 0] <= start
             end_cond = end <= fine_tune_regions[:, 1]

@@ -75,11 +75,7 @@ class diDecoder(nn.Module):
 
     def forward(self, x):
         x=self.cnn(x)
-<<<<<<< HEAD
         x=self.res_blocks(x)
-=======
-        # x=self.res_blocks(x)
->>>>>>> backup/old-main
         x=self.conv1(x)
         x=self.conv2(x)
         x=self.conv3(x)

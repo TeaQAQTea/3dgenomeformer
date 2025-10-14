@@ -149,11 +149,16 @@ class SequenceFeature(Feature):
     def get(self, start, end):
         seq = self.seq_to_npy(self.seq, start, end)
 <<<<<<< HEAD
+<<<<<<< HEAD
         onehot_seq = self.onehot_encode(seq)
         return onehot_seq
 =======
         return seq
 >>>>>>> backup/old-main
+=======
+        onehot_seq = self.onehot_encode(seq)
+        return onehot_seq
+>>>>>>> main-clean
 
     def __len__(self):
         return len(self.seq)

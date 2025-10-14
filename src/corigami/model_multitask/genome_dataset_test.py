@@ -14,11 +14,15 @@ class GenomeDataset(Dataset):
                        include_sequence = True,
                        include_genomic_features = True,
 <<<<<<< HEAD
+<<<<<<< HEAD
                        use_aug = True):
 =======
                        use_aug = True,
                        chrom = 'chr15'):
 >>>>>>> backup/old-main
+=======
+                       use_aug = True):
+>>>>>>> main-clean
         self.data_root = celltype_root
         self.include_sequence = include_sequence
         self.include_genomic_features = include_genomic_features
@@ -30,9 +34,12 @@ class GenomeDataset(Dataset):
 
         # Assign train/val/test chromosomes
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
         self.chr_names = self.get_chr_names(genome_assembly)
         if mode == 'train':
             # self.chr_names =['chr22']
@@ -43,10 +50,14 @@ class GenomeDataset(Dataset):
             self.chr_names = ['chr10']
         elif mode == 'test':
 <<<<<<< HEAD
+<<<<<<< HEAD
             self.chr_names = ['chr15']
 =======
             self.chr_names = [chrom]
 >>>>>>> backup/old-main
+=======
+            self.chr_names = ['chr15']
+>>>>>>> main-clean
         else:
             raise Exception(f'Unknown mode {mode}')
 

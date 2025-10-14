@@ -127,6 +127,9 @@ class diOutput(GenomicFeatureSingleThread):
 
     def feature_to_npy(self, chr_name, start, end):
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
         with pbw.open(self.path) as bw_file:
             max_values = bw_file.stats(chr_name, start, end, type='max',nBins=256,numpy=True)
             min_values = bw_file.stats(chr_name, start, end, type='min',nBins=256,numpy=True)
@@ -139,6 +142,7 @@ class diOutput(GenomicFeatureSingleThread):
                                 max_values, min_values)
 
         return final_values
+<<<<<<< HEAD
 =======
         # middle_length = 8192
 
@@ -154,6 +158,8 @@ class diOutput(GenomicFeatureSingleThread):
 
         return mean_value
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
     
 
 class SequenceFeature(Feature):

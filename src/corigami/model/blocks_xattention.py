@@ -90,12 +90,17 @@ class EncoderSplit(Encoder):
         self.res_blocks_seq = self.get_res_blocks(num_blocks, hidden_ins_half, hiddens_half)
         self.res_blocks_epi = self.get_res_blocks(num_blocks, hidden_ins_half, hiddens_half)
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.cross_attn_epi = StackedCrossAttentionBlocks()
         self.cross_attn_seq = StackedCrossAttentionBlocks() 
 =======
         self.cross_attn_epi = StackedCrossAttentionBlocks(128,8,3)
         self.cross_attn_seq = StackedCrossAttentionBlocks(128,8,3) 
 >>>>>>> backup/old-main
+=======
+        self.cross_attn_epi = StackedCrossAttentionBlocks()
+        self.cross_attn_seq = StackedCrossAttentionBlocks() 
+>>>>>>> main-clean
         self.conv_end = nn.Conv1d(256, output_size, 1)
 
     def forward(self, x):
@@ -113,12 +118,17 @@ class EncoderSplit(Encoder):
         epi = torch.transpose(epi, 1, 2)
         seq = torch.transpose(seq, 1, 2)
 <<<<<<< HEAD
+<<<<<<< HEAD
         epi_cross = self.cross_attn_epi(seq, epi, epi)
         seq_cross = self.cross_attn_seq(epi, seq, seq)
 =======
         epi_cross = self.cross_attn_epi(epi, seq, seq)
         seq_cross = self.cross_attn_seq(seq, epi, epi)
 >>>>>>> backup/old-main
+=======
+        epi_cross = self.cross_attn_epi(seq, epi, epi)
+        seq_cross = self.cross_attn_seq(epi, seq, seq)
+>>>>>>> main-clean
 
         seq_cross = torch.transpose(seq_cross, 1, 2)
         epi_cross = torch.transpose(epi_cross, 1, 2)
@@ -323,6 +333,9 @@ class CrossAttention(nn.Module):
         return attn_output
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main-clean
 class CrossAttentionBlock(nn.Module):
     def __init__(self, query_dim, key_dim, value_dim,layers = 8, record_attn = False):
         super(CrossAttentionBlock, self).__init__()
@@ -334,6 +347,7 @@ class CrossAttentionBlock(nn.Module):
         value_input = self.norm(value_input+cross_out)
         key_input = value_input
         return query_input, key_input, value_input
+<<<<<<< HEAD
 =======
 
 class CrossAttentionBlock(nn.Module):
@@ -373,6 +387,8 @@ class StackedCrossAttention(nn.Module):
 
 
 >>>>>>> backup/old-main
+=======
+>>>>>>> main-clean
 
 if __name__ == '__main__':
     main()

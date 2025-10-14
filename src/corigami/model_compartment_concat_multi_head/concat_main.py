@@ -101,11 +101,7 @@ def load_partial_weights(model, checkpoint_path):
 
 # Lightning 模型类
 class GenomeModel(pl.LightningModule):
-<<<<<<< HEAD
     def __init__(self, encoder, transformer, decoder, num_splits, learning_rate, trainer_max_epochs=500, encoder_weights=None, transformer_weights=None,alpha=0):
-=======
-    def __init__(self, encoder, transformer, decoder, num_splits, learning_rate, trainer_max_epochs=500, encoder_weights=None, transformer_weights=None):
->>>>>>> backup/old-main
         super(GenomeModel, self).__init__()
         self.encoder = encoder
         self.transformer = transformer
@@ -113,10 +109,7 @@ class GenomeModel(pl.LightningModule):
         self.num_splits = num_splits
         self.learning_rate = learning_rate
         self.trainer_max_epochs = trainer_max_epochs
-<<<<<<< HEAD
         self.alpha = alpha
-=======
->>>>>>> backup/old-main
 
         # 卷积层：将输入通道从 2560 转换为 256
         self.block1 = DilatedResidualBlock(in_channels=256, out_channels=128, kernel_size=3, dilation=1, stride=2)  # 序列长度从 2560 减少
@@ -202,20 +195,12 @@ class GenomeModel(pl.LightningModule):
         # 计算分类损失（CrossEntropyLoss）
         # 首先需要将输出转换为符号分类的概率
         classification_logits = outputs.squeeze()  # 假设输出是 [batch_size, 1]
-<<<<<<< HEAD
         criterion_class = torch.nn.BCELoss()  # 使用BCEWithLogitsLoss处理二分类问题
 
         classification_loss = criterion_class(classification_logits, labels.float().squeeze())  # 将标签转换为浮点型
 
         # 总损失：加权组合回归和分类损失
         alpha = 0  # 可调整的权重系数
-=======
-        criterion_class = torch.nn.BCEWithLogitsLoss()  # 使用BCEWithLogitsLoss处理二分类问题
-        classification_loss = criterion_class(classification_logits, labels.float().squeeze())  # 将标签转换为浮点型
-
-        # 总损失：加权组合回归和分类损失
-        alpha = 0.5  # 可调整的权重系数
->>>>>>> backup/old-main
         beta = 1 - alpha
         loss = alpha * regression_loss + beta * classification_loss
 
@@ -251,7 +236,6 @@ class GenomeModel(pl.LightningModule):
 
         # 计算分类损失（BCEWithLogitsLoss）
         classification_logits = outputs.squeeze()  # 假设输出为 [batch_size, 1]
-<<<<<<< HEAD
         criterion_class = torch.nn.BCELoss()  # 使用BCEWithLogitsLoss处理二分类问题
         print(classification_logits.shape)
         print(labels.shape)
@@ -259,13 +243,6 @@ class GenomeModel(pl.LightningModule):
 
         # 总损失：加权组合回归和分类损失
         alpha = 0  # 可调整的权重系数
-=======
-        criterion_class = torch.nn.BCEWithLogitsLoss()  # 使用BCEWithLogitsLoss处理二分类问题
-        classification_loss = criterion_class(classification_logits, labels.float())  # 将标签转换为浮点型
-
-        # 总损失：加权组合回归和分类损失
-        alpha = 0.5  # 可调整的权重系数
->>>>>>> backup/old-main
         beta = 1 - alpha
         loss = alpha * regression_loss + beta * classification_loss
 
@@ -468,11 +445,7 @@ def init_training(args):
     pl_module = GenomeModel(
         encoder=EncoderSplit(num_epi=2, output_size=256),
         transformer=TransformerLayer(d_model=256, nhead=8),
-<<<<<<< HEAD
         decoder=diDecoder(hidden_dim=256),
-=======
-        decoder=diDecoder(hidden_dim=128),
->>>>>>> backup/old-main
         num_splits=args.num_splits,
         learning_rate=args.lr,
         trainer_max_epochs=args.trainer_max_epochs,

@@ -5,11 +5,7 @@ from cooler import Cooler
 from pathlib import Path
 
 def main(path, save_path, resolution, window_size, balance=True):
-<<<<<<< HEAD
     hic = Cooler(f'{path}')
-=======
-    hic = Cooler(f'{path}::resolutions/{resolution}')
->>>>>>> backup/old-main
     data = hic.matrix(balance=balance, sparse=True)
     # main loop
     for chrom in hic.chromnames:
@@ -33,11 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('outdir', help='Directory to save files to. Will be created if need but not its parents')
     parser.add_argument('-r', '--resolution', type=int, default=10000,
                         help='Matrix resolution to use [default: 10000]')
-<<<<<<< HEAD
     parser.add_argument('-w', '--window', type=int, default=512,
-=======
-    parser.add_argument('-w', '--window', type=int, default=256,
->>>>>>> backup/old-main
             help='Number of diagonals to extract [default: 256]')
     parser.add_argument('--no-balance', dest='balance', action='store_false', help='Do not use balanced matrix')
     argv = parser.parse_args()

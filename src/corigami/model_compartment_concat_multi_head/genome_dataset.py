@@ -39,11 +39,7 @@ class GenomeDataset(Dataset):
             raise Exception(f'Unknown mode {mode}')
 
         # Load di values
-<<<<<<< HEAD
         di_dicts = {'file_name': 'tag_NHEK_10kb_pca.PC1.same.nored.bw', 'norm':None}
-=======
-        di_dicts = {'file_name': 'normed_compartment_same.bw', 'norm':None}
->>>>>>> backup/old-main
         self.di = self.load_di(f'{celltype_root}/genomic_features', di_dicts)
         # Load genomewide features
         self.genomic_features = self.load_features(f'{celltype_root}/genomic_features', feat_dicts)

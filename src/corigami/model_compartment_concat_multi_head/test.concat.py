@@ -23,11 +23,7 @@ def init_testing(args):
     pl_module = GenomeModel(
         encoder=EncoderSplit(num_epi=2, output_size=256),
         transformer=TransformerLayer(d_model=256, nhead=8),
-<<<<<<< HEAD
         decoder=diDecoder(hidden_dim=256),
-=======
-        decoder=diDecoder(hidden_dim=128),
->>>>>>> backup/old-main
         num_splits=args.num_splits,
         learning_rate=args.lr,
         trainer_max_epochs=args.trainer_max_epochs,
