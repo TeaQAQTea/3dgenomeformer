@@ -22,17 +22,19 @@ class ChromosomeDataset(Dataset):
             as ``root/DNA/chr1/DNA`` for DNA as an example.
         omit_regions (list of tuples): start and end of excluded regions
     '''
-    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None):
+    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None, resolution = 4096, cool_res = 5000):
+
+        sample_length = 2097152 # 2Mbp
         self.use_aug = use_aug
-        self.res = 5000 # 5kb resolution
-        self.bins = 209.7152*2 # 209.7152 bins 2097152 bp
-        self.image_scale = 512 # IMPORTANT, scale 210 to 256
+        self.res = cool_res # 5000 or 10000
+        self.bins = sample_length / cool_res # 209.7152 bins 2097152 bp
+        self.image_scale = sample_length//resolution # IMPORTANT, scale 210 to 256
         if mode == 'finetune':
-            self.sample_bins = 600
-            self.stride = 50 # bins
+            self.sample_bins = self.image_scale + 50
+            self.stride = self.image_scale // 10
         else:
-            self.sample_bins = 1000
-            self.stride =100 # bins
+            self.sample_bins = self.image_scale*2
+            self.stride = self.image_scale // 5
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')
@@ -42,12 +44,18 @@ class ChromosomeDataset(Dataset):
         if mode == 'finetune':
             self.mat = data_feature.HiCFeature(path = f'{celltype_root}/finetune_hic_matrix/{chr_name}.npz')
         else:
-            self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_5000_512/{chr_name}.npz')
+            if cool_res == 10000:
+                self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix/{chr_name}.npz')
+            else:
+                self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_5000_512/{chr_name}.npz')
 
         self.omit_regions = omit_regions
         self.check_length() # Check data length
         self.all_intervals = self.get_active_intervals(mode, finetune_regions)
-        self.intervals = self.filter(self.all_intervals, omit_regions)
+        if mode == 'test':
+            self.intervals = self.all_intervals
+        else:
+            self.intervals = self.filter(self.all_intervals, omit_regions)
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]

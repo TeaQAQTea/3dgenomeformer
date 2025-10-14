@@ -22,32 +22,28 @@ class ChromosomeDataset(Dataset):
             as ``root/DNA/chr1/DNA`` for DNA as an example.
         omit_regions (list of tuples): start and end of excluded regions
     '''
-    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None):
+    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True):
         self.use_aug = use_aug
-        self.res = 5000 # 5kb resolution
-        self.bins = 209.7152*2 # 209.7152 bins 2097152 bp
-        self.image_scale = 512 # IMPORTANT, scale 210 to 256
-        if mode == 'finetune':
-            self.sample_bins = 600
-            self.stride = 50 # bins
-        else:
-            self.sample_bins = 1000
-            self.stride =100 # bins
+        self.res = 10000 # 10kb resolution
+        self.bins = 209.7152 # 209.7152 bins 2097152 bp
+        self.image_scale = 256 # IMPORTANT, scale 210 to 256
+        self.sample_bins = 500
+        self.stride =25# bins
         self.chr_name = chr_name
 
         print(f'Loading chromosome {chr_name}...')
 
         self.seq = data_feature.SequenceFeature(path = f'{celltype_root}/../dna_sequence/{chr_name}.fa.gz')
         self.genomic_features = feature_list
-        if mode == 'finetune':
-            self.mat = data_feature.HiCFeature(path = f'{celltype_root}/finetune_hic_matrix/{chr_name}.npz')
-        else:
-            self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_5000_512/{chr_name}.npz')
+        self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix/{chr_name}.npz')
 
         self.omit_regions = omit_regions
         self.check_length() # Check data length
-        self.all_intervals = self.get_active_intervals(mode, finetune_regions)
-        self.intervals = self.filter(self.all_intervals, omit_regions)
+
+        # self.all_intervals = self.get_active_intervals()
+        # self.intervals=self.all_intervals
+
+        self.intervals = self.get_intervals('/local1/home/zhongjiaxin/ref_element/hg38.promoter.bed', 'chr15')
 
     def __getitem__(self, idx):
         start, end = self.intervals[idx]
@@ -111,6 +107,13 @@ class ChromosomeDataset(Dataset):
             seq_comp = seq
         return seq_comp
 
+    def get_intervals(self, bedpath, chr_name):
+        df = pd.read_csv(bedpath, sep = '\t', names = ['chr', 'start', 'end'],usecols = [0,1,2])
+        df = df[df['chr'] == chr_name]
+        intervals = df[['start', 'end']].to_numpy()
+
+        return intervals
+
     def get_data_at_interval(self, start, end):
         '''
         Slice data from arrays with transformations
@@ -125,35 +128,16 @@ class ChromosomeDataset(Dataset):
         mat = np.log(mat + 1)
         return seq, features, mat
 
-    def get_active_intervals(self, mode, finetune_regions=None):
+    def get_active_intervals(self):
         '''
         Get intervals for sample data: [[start, end]]
         '''
-        if mode == 'finetune' and finetune_regions is not None:
-            fr = np.array(finetune_regions, dtype=np.int64).reshape(-1, 2)
-            print(fr)
-            all_intervals = []
-            for r_start, r_end in fr:
-                region_bins = (r_end - r_start) // self.res
-                print(region_bins)
-                if region_bins < self.sample_bins:
-                    continue
-                data_size = (region_bins - self.sample_bins) // self.stride + 1
-                if data_size <= 0:
-                    continue
-                starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
-                intervals_bin = np.append(starts, starts + self.sample_bins, axis=1)
-                intervals_bp  = intervals_bin * self.res + r_start  # 迁移回基因组坐标
-                all_intervals.append(intervals_bp)
-            if len(all_intervals) == 0:
-                return np.empty((0, 2), dtype=int)
-            intervals = np.vstack(all_intervals)
-        else:
-            chr_bins = len(self.seq) / self.res
-            data_size = (chr_bins - self.sample_bins) / self.stride
-            starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
-            intervals_bin = np.append(starts, starts + self.sample_bins, axis=1)
-            intervals = intervals_bin * self.res
+        print(len(self.seq))
+        chr_bins = len(self.seq) / self.res
+        data_size = (chr_bins - self.sample_bins) / self.stride
+        starts = np.arange(0, data_size).reshape(-1, 1) * self.stride
+        intervals_bin = np.append(starts, starts + self.sample_bins, axis=1)
+        intervals = intervals_bin * self.res
         return intervals.astype(int)
 
     def filter(self, intervals, omit_regions):
@@ -166,25 +150,7 @@ class ChromosomeDataset(Dataset):
             if sum(start_cond * end_cond) == 0:
                 valid_intervals.append([start, end])
         return valid_intervals
-    
-    def filter2(self, intervals, fine_tune_regions):
-        """
-        保留所有完全落在 fine_tune_regions 内的 intervals
-        intervals: list of [start, end]
-        fine_tune_regions: numpy array of shape (N, 2)  每行是 [region_start, region_end]
-        """
-        valid_intervals = []
-        for start, end in intervals:
-            print(fine_tune_regions)
-            print("1111",start,end)
-            # 判断是否完全被任意一个 fine_tune 区间包含
-            start_cond = fine_tune_regions[:, 0] <= start
-            end_cond = end <= fine_tune_regions[:, 1]
-            # 若存在某个 fine_tune_region 完全包含该 interval，则保留
-            if (start_cond & end_cond).any():
-                valid_intervals.append([start, end])
-        return valid_intervals
-    
+
     def encode_seq(self, seq):
         ''' 
         encode dna to onehot (n x 5)
