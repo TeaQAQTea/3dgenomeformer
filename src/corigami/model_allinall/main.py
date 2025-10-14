@@ -238,7 +238,7 @@ class TrainModule(pl.LightningModule):
                                 include_sequence = True,
                                 include_genomic_features = True,
                                 resolution = args.resolution,
-                                cool_res = args.cool_res),
+                                cool_res = args.cool_res)
 
         # Record length for printing validation image
         if mode == 'val':
