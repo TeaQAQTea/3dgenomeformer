@@ -32,7 +32,7 @@ class HiCFeature(Feature):
         print(f'Reading Hi-C: {path}')
         return dict(np.load(path))
 
-    def diag_to_mat(self, ori_load, start, end,mean_avg = 10e-3):
+    def diag_to_mat(self, ori_load, start, end, mean_avg = 10e-3):
         '''
         Only accessing 256 x 256 region max, two loops are okay
         '''
@@ -55,7 +55,7 @@ class HiCFeature(Feature):
             diag_region.append(diag_line)
         diag_region = np.nan_to_num(diag_region, nan=0.0, posinf=0.0, neginf=0.0)
         diag_region[diag_region < mean_avg] = mean_avg
-        # 只用有限值算均值（此时已无 Inf/NaN，其实直接 mean 也行）
+
         mean_diag_region = np.mean(diag_region)
 
         # 避免除 0
