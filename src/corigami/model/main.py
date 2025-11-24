@@ -6,15 +6,9 @@ import pytorch_lightning as pl
 import pytorch_lightning.callbacks as callbacks
 import os
 import corigami.model.corigami_models as corigami_models
-<<<<<<< HEAD
-<<<<<<< HEAD
-from corigami.data import genome_dataset
-=======
+
 import genome_dataset
->>>>>>> backup/old-main
-=======
-from corigami.data import genome_dataset
->>>>>>> main-clean
+
 from torchinfo import summary
 
 def main():
@@ -77,26 +71,13 @@ def init_parser():
   parser.add_argument('--lr', dest='lr', default=2e-4,
                         type=float,
                         help='Learning rate')
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> main-clean
- 
-  args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
-  for i in range (len(args.feature_log)):
-      if args.feature_log[i]=='None':
-            args.feature_log[i]=None
-<<<<<<< HEAD
-=======
+
   parser.add_argument('--weight', dest='weight', default=2)
   args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
   args.len_epigenomic_features = len(args.epigenomic_features)
   for i in range (len(args.feature_log)):
       if args.feature_log[i]=='None':
           args.feature_log[i]=None
->>>>>>> backup/old-main
-=======
->>>>>>> main-clean
   return args
 
 def init_training(args):
@@ -151,28 +132,14 @@ class TrainModule(pl.LightningModule):
     def __init__(self, args):
         super().__init__()
         self.model = self.get_model(args)
-<<<<<<< HEAD
-<<<<<<< HEAD
         summary(self.model,input_size=(4, 2097152, 7))
-=======
->>>>>>> backup/old-main
-=======
-        summary(self.model,input_size=(4, 2097152, 7))
->>>>>>> main-clean
         #保存为txt
         if not os.path.exists(args.run_save_path):
             os.makedirs(args.run_save_path)
         with open(f'{args.run_save_path}/model_summary.txt', 'w') as f:
             sys.stdout = f
-<<<<<<< HEAD
-<<<<<<< HEAD
-            summary(self.model,input_size=(4, 2097152, 7))
-=======
+
             summary(self.model,input_size=(4, 2097152, args.len_epigenomic_features+5))
->>>>>>> backup/old-main
-=======
-            summary(self.model,input_size=(4, 2097152, 7))
->>>>>>> main-clean
             sys.stdout = sys.__stdout__
         
         self.args = args
@@ -195,16 +162,6 @@ class TrainModule(pl.LightningModule):
         outputs = self(inputs)
         criterion = torch.nn.MSELoss()
         loss = criterion(outputs, mat)
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-        # change_loss=self.change_capture_loss(mat,outputs)
-        # loss +=self.args.weight*change_loss
->>>>>>> backup/old-main
-=======
-
->>>>>>> main-clean
         metrics = {'train_step_loss': loss}
         self.log_dict(metrics, batch_size = inputs.shape[0], prog_bar=True)
         return loss
@@ -222,14 +179,6 @@ class TrainModule(pl.LightningModule):
         outputs = self(inputs)
         criterion = torch.nn.MSELoss()
         loss = criterion(outputs, mat)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        # change_loss=self.change_capture_loss(mat,outputs)
-        # loss +=self.args.weight*change_loss
->>>>>>> backup/old-main
-=======
->>>>>>> main-clean
         return loss
 
     # Collect epoch statistics
@@ -274,13 +223,6 @@ class TrainModule(pl.LightningModule):
         for i in range(len(args.epigenomic_features)):
             genomic_features[args.epigenomic_features[i]] = {'file_name' : f'{args.epigenomic_features[i]}',
                                              'norm' : args.feature_log[i]}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        print(genomic_features)
->>>>>>> backup/old-main
-=======
->>>>>>> main-clean
         save_path = f'{args.run_save_path}/input_data.txt'
         
         with open(save_path, 'w') as f:
@@ -331,17 +273,7 @@ class TrainModule(pl.LightningModule):
 
     def get_model(self, args):
         model_name =  args.model_type
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> main-clean
-        num_genomic_features = 2
-        ModelClass = getattr(corigami_models, model_name)
-        model = ModelClass(num_genomic_features, mid_hidden = 256)
-        return model
 
-<<<<<<< HEAD
-=======
         num_genomic_features = args.len_epigenomic_features
         ModelClass = getattr(corigami_models, model_name)
         model = ModelClass(num_genomic_features, mid_hidden = 256)
@@ -359,8 +291,6 @@ class TrainModule(pl.LightningModule):
         dx_diff = torch.pow(dx_true - dx_pred, 2)
         
         return torch.mean(dy_diff) + torch.mean(dx_diff)
->>>>>>> backup/old-main
-=======
->>>>>>> main-clean
+
 if __name__ == '__main__':
     main()

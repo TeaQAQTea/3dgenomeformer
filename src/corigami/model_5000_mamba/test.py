@@ -165,6 +165,8 @@ class TrainModule(pl.LightningModule):
         tgt_np   = r['target'].detach().cpu().numpy()             # (B, H, W)
         start_np = r['start'].detach().cpu().numpy().reshape(-1)  # (B,)
         end_np   = r['end'].detach().cpu().numpy().reshape(-1)    # (B,)
+        print(type(r['chr_name']))
+        print(r['chr_name'])
         chr_np   = r['chr_name'].detach().cpu().numpy().reshape(-1)  # (B,)
 
         # attention 规范化到 (B, H, W)

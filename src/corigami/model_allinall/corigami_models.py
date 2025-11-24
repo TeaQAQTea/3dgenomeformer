@@ -38,13 +38,15 @@ class ConvModel(nn.Module):
         x_j = x.unsqueeze(3).repeat(1, 1, 1, length)
         input_map = torch.cat([x_i, x_j], dim = 1)
         return input_map
+ 
 
 
 class ConvTransModel(ConvModel):
     
-    def __init__(self, num_genomic_features, mid_hidden = 512, record_attn = False, backbone = 'Mamba', resolution = 4096):
+    def __init__(self, num_genomic_features,sample_length, mid_hidden = 512, record_attn = False, backbone = 'Mamba', resolution = 4096):
         super(ConvTransModel, self).__init__(num_genomic_features)
         print('Initializing ConvTransModel')
+        self.sample_length = sample_length
         self.resolution = resolution
         self.encoder = blocks.EncoderSplit(num_genomic_features, output_size = mid_hidden, num_blocks =np.log2(self.resolution).astype(int)-1) 
         # self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
@@ -62,7 +64,7 @@ class ConvTransModel(ConvModel):
             record_attn = False
         else:
             self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
-        self.decoder = blocks.Decoder(mid_hidden*2 )
+        self.decoder = blocks.Decoder(mid_hidden * 2)
         self.record_attn = record_attn
     
     def forward(self, x):
@@ -70,7 +72,6 @@ class ConvTransModel(ConvModel):
         Input feature:
         batch_size, length * res, feature_dim
         '''
-        sample_len = 2097152 
         x = self.move_feature_forward(x).float()
         x = self.encoder(x)
         x = self.move_feature_forward(x)
@@ -79,8 +80,7 @@ class ConvTransModel(ConvModel):
         else:
             x = self.attn(x)
         x = self.move_feature_forward(x)
-        x = self.diagonalize(x, length = sample_len//self.resolution)
-        print(x.shape)
+        x = self.diagonalize(x, length = self.sample_length//self.resolution)
         x = self.decoder(x).squeeze(1)
         # print(x.shape)
         if self.record_attn:

@@ -8,6 +8,7 @@ import numpy as np
 
 import inference.utils.inference_utils as infer
 from inference.utils import plot_utils
+import h5py
 
 WINDOW = 2097152  # 固定窗口大小，与你注释一致
 
@@ -41,13 +42,16 @@ def predict_one(output_path: str,
                 seq_path: str,
                 ctcf_path: str,
                 atac_path: str,
+                log= [None, None],
                 do_plot: bool = True) -> np.ndarray:
     """
     与你原 single_prediction 等价，但可选择不画图，仅返回矩阵。
     """
     # 加载区域数据（utils 内部负责切片/标准化）
+
+    print(f"Loading data for {chr_name}:{start}-{start + WINDOW}...")
     seq_region, ctcf_region, atac_region = infer.load_region(
-        chr_name, start, seq_path, ctcf_path, atac_path
+        chr_name, start, seq_path, ctcf_path, atac_path, log=log
     )
     # 预测
     pred = infer.prediction(seq_region, ctcf_region, atac_region, model_path)
@@ -95,6 +99,7 @@ def main():
                         help='Save all predictions into a single HDF5 file.')
     parser.add_argument('--h5-name', dest='h5_name', default='predictions.h5',
                         help='HDF5 filename (used when --save-h5).')
+    parser.add_argument('--log',dest='feature_log', nargs='+',default=['log','log'])
 
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
 
@@ -111,36 +116,47 @@ def main():
     if args.bed_path:
         regions = read_bed(args.bed_path)
     else:
-        # 单窗口模式：需要 --chr 与 --start
         if not args.chr_name or args.start is None:
             parser.error("Either provide --bed, or both --chr and --start.")
         regions = [(args.chr_name, int(args.start), int(args.start) + WINDOW)]
 
-    # H5 准备
+    # ---------- H5：改为可增长的单一数据集 ----------
+    h5f = None
+    d_pred = d_chr = d_start = d_end = None
+    pred_hw = None
+    written_n = 0
+
     if args.save_h5:
         try:
-            import h5py
             h5_path = base_out / args.h5_name
             if h5_path.exists():
                 h5_path.unlink()
             h5f = h5py.File(h5_path, 'w')
-            h5_chr = h5f.create_dataset('chr', (len(regions),), dtype=h5py.string_dtype('utf-8'))
-            h5_start = h5f.create_dataset('start', (len(regions),), dtype='i8')
-            h5_end = h5f.create_dataset('end', (len(regions),), dtype='i8')
-            # 预测矩阵可能大小一致（若 utils 固定窗口），则可一次性建数组；否则逐个 group 存
-            # 这里稳妥起见：每个区间一个 group
-            h5_grp = h5f.create_group('pred')
+
+            # 先建空数据集，占位，第一次写入时再根据 (H,W) 重建
+            d_pred = h5f.create_dataset(
+                "predict", shape=(0, 1, 1), maxshape=(None, None, None),
+                dtype="f4", chunks=True, compression="gzip", compression_opts=4
+            )
+            d_chr = h5f.create_dataset(
+                "chr", shape=(0,), maxshape=(None,),
+                dtype=h5py.string_dtype('utf-8'), chunks=True
+            )
+            d_start = h5f.create_dataset(
+                "start", shape=(0,), maxshape=(None,), dtype='i8', chunks=True
+            )
+            d_end = h5f.create_dataset(
+                "end", shape=(0,), maxshape=(None,), dtype='i8', chunks=True
+            )
         except Exception as e:
             print(f"[WARN] Failed to prepare HDF5 ({e}), fallback to no H5 saving.")
             args.save_h5 = False
             h5f = None
-    else:
-        h5f = None
 
     # 逐区间预测
-    for i, (chrom, start, end) in enumerate(regions):
-        # 与 utils 接口一致，窗口宽度固定从 start 开始
-        start_aligned = start  # 这里直接用 start，必要时可加边界检查/对齐逻辑
+    for (chrom, start, end) in regions:
+        # 与 utils 接口一致
+        start_aligned = start
         out_dir = base_out / f"{chrom}_{start_aligned}"
         safe_mkdir(out_dir)
 
@@ -154,7 +170,8 @@ def main():
                 seq_path=args.seq_path,
                 ctcf_path=args.ctcf_path,
                 atac_path=args.atac_path,
-                do_plot=(not args.no_plot)
+                do_plot=(not args.no_plot),
+                log=args.feature_log
             )
         except Exception as e:
             print(f"[ERROR] {chrom}:{start_aligned}-{start_aligned+WINDOW} failed: {e}")
@@ -164,22 +181,42 @@ def main():
         if args.save_npy:
             np.save(out_dir / "prediction.npy", pred)
 
-        # 可选写入 H5
+        # H5 追加写入（可增长）
         if h5f is not None:
-            h5_chr[i] = chrom
-            h5_start[i] = start_aligned
-            h5_end[i] = start_aligned + WINDOW
-            # 逐个区间存成 pred/{i}
-            h5_grp.create_dataset(str(i), data=pred)
+            pred = np.asarray(pred)
+            if pred_hw is None:
+                # 第一次写入时，确定 (H,W)，重建 predict 数据集的尾维
+                H, W = pred.shape[-2], pred.shape[-1]
+                pred_hw = (H, W)
+                # 删除占位并重建（固定尾维方便后续追加）
+                del h5f["predict"]
+                d_pred = h5f.create_dataset(
+                    "predict", shape=(0, H, W), maxshape=(None, H, W),
+                    dtype="f4", chunks=(1, H, W), compression="gzip", compression_opts=4
+                )
+
+            # 统一扩容 + 赋值
+            s, e = written_n, written_n + 1
+            d_pred.resize((e, *pred_hw))
+            d_chr.resize((e,))
+            d_start.resize((e,))
+            d_end.resize((e,))
+
+            d_pred[s:e, :, :] = pred[np.newaxis, ...]
+            d_chr[s:e] = np.array([chrom])
+            d_start[s:e] = np.array([start_aligned], dtype=np.int64)
+            d_end[s:e] = np.array([start_aligned + WINDOW], dtype=np.int64)
+
+            written_n = e
 
         print(f"[OK] {chrom}:{start_aligned}-{start_aligned+WINDOW} → {out_dir}")
 
     if h5f is not None:
+        h5f.flush()
         h5f.close()
-        print(f"[H5] Saved to {base_out / args.h5_name}")
+        print(f"[H5] Saved to {base_out / args.h5_name}  (N={written_n})")
 
     print("All done.")
-
 
 if __name__ == '__main__':
     main()

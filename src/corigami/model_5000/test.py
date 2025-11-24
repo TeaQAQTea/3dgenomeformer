@@ -206,7 +206,8 @@ class TrainModule(pl.LightningModule):
         start_np = r['start'].detach().cpu().numpy().reshape(-1)  # (B,)
         end_np   = r['end'].detach().cpu().numpy().reshape(-1)    # (B,)
         chr_np   = r['chr_name'].detach().cpu().numpy().reshape(-1)  # (B,)
-
+        print(type(r['chr_name']))
+        print(r['chr_name'])
         # attention 规范化到 (B, H, W)
         att_np = r['attention']
         if att_np is not None:

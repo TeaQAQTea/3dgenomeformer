@@ -4,9 +4,9 @@ import pandas as pd
 import sys
 import torch
 
-from corigami.inference.utils.model_utils import load_default
+from inference.utils.model_utils import load_default
 
-def preprocess_default(seq, ctcf, atac,log_transform ):
+def preprocess_default(seq, ctcf, atac ):
     # Process sequence
     seq = torch.tensor(seq).unsqueeze(0) 
     # Normailze ctcf and atac-seq
@@ -22,20 +22,27 @@ def preprocess_default(seq, ctcf, atac,log_transform ):
     return inputs
 
 ## Load data ##
-def load_region(chr_name, start, seq_path, ctcf_path, atac_path, window = 2097152):
+def load_region(chr_name, start, seq_path, ctcf_path, atac_path, window = 2097152, log = [None, None]):
     ''' Single loading method for one region '''
     end = start + window
-    seq, ctcf, atac = load_data_default(chr_name, seq_path, ctcf_path, atac_path)
+    seq, ctcf, atac = load_data_default(chr_name, seq_path, ctcf_path, atac_path, log)
     seq_region, ctcf_region, atac_region = get_data_at_interval(chr_name, start, end, seq, ctcf, atac)
     return seq_region, ctcf_region, atac_region
 
 
-def load_data_default(chr_name, seq_path, ctcf_path, atac_path):
+def load_data_default(chr_name, seq_path, ctcf_path, atac_path, log):
     from corigami.data.data_feature import SequenceFeature, GenomicFeature
     seq_chr_path = os.path.join(seq_path, f'{chr_name}.fa.gz')
     seq = SequenceFeature(path = seq_chr_path)
-    ctcf = GenomicFeature(path = ctcf_path, norm ='log')
-    atac = GenomicFeature(path = atac_path, norm = 'log')
+    print(log)
+    for i in range(len(log)):
+        if log[i] == 'log':
+            log[i] = 'log'
+        else:
+            log[i] = None
+    print(log)
+    ctcf = GenomicFeature(path = ctcf_path, norm = log[0])
+    atac = GenomicFeature(path = atac_path, norm = log[1])
 
     return seq, ctcf, atac
 
@@ -53,5 +60,6 @@ def prediction(seq_region, ctcf_region, atac_region, model_path):
     model = load_default(model_path)
     inputs = preprocess_default(seq_region, ctcf_region, atac_region)
     pred = model(inputs)[0].detach().cpu().numpy()
+    print(sum(pred.flatten()))
     return pred
 

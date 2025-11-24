@@ -51,6 +51,7 @@ class ChromosomeDataset(Dataset):
                 f"{celltype_root}/hic_matrix_{cool_res}_1024/{chr_name}.npz",
                 f"{celltype_root}/hic_matrix_{cool_res}_512/{chr_name}.npz",
                 f"{celltype_root}/hic_matrix_{cool_res}/{chr_name}.npz",
+                f"{celltype_root}/hic_matrix/{chr_name}.npz"
             ]
 
             hic_path = None

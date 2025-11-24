@@ -9,6 +9,7 @@ class GenomeDataset(Dataset):
     '''
     def __init__(self, celltype_root, 
                        genome_assembly,
+                       sample_length,
                        feat_dicts, 
                        mode = 'train', 
                        include_sequence = True,
@@ -27,6 +28,7 @@ class GenomeDataset(Dataset):
         if not self.include_sequence: print('Not using sequence!')
         if not self.include_genomic_features: print('Not using genomic features!')
         self.use_aug = use_aug
+        self.sample_length = sample_length
 
         if mode != 'train' and mode !='finetune': self.use_aug = False # Set augmentation
         if mode == 'finetune':
@@ -34,14 +36,14 @@ class GenomeDataset(Dataset):
         # Assign train/val/test chromosomes
         self.chr_names = self.get_chr_names(genome_assembly)
         if mode == 'train':
-            #self.chr_names=['chr22']
-            self.chr_names.remove('chr10')
-            self.chr_names.remove('chr15')
+            # self.chr_names=['chr22']
+            self.chr_names.remove('chr6')
+            self.chr_names.remove('chr8')
             self.chr_names.remove('chrX') # chrX removed for consistency
         elif mode == 'val':
-            self.chr_names = ['chr10']
+            self.chr_names = ['chr6']
         elif mode == 'test':
-            self.chr_names = ['chr15']
+            self.chr_names = ['chr8']
         elif mode == 'finetune':
             self.chr_names = list(self.finetune_region.keys())
         else:
@@ -87,9 +89,9 @@ class GenomeDataset(Dataset):
             omit_regions = self.centrotelo_dict[chr_name]
             if mode == 'finetune':
                 finetune_regions = self.finetune_region[chr_name]
-                chr_data_dict[chr_name] = ChromosomeDataset(self.data_root, chr_name, omit_regions, genomic_features, self.use_aug, mode, finetune_regions, resolution, cool_res,target_treatment=target_treatment, use_weight=self.use_weight, clip_pc=self.clip_pc)
+                chr_data_dict[chr_name] = ChromosomeDataset(self.data_root,self.sample_length, chr_name, omit_regions, genomic_features, self.use_aug, mode, finetune_regions, resolution, cool_res,target_treatment=target_treatment, use_weight=self.use_weight, clip_pc=self.clip_pc)
             else:
-                chr_data_dict[chr_name] = ChromosomeDataset(self.data_root, chr_name, omit_regions, genomic_features, self.use_aug, mode, resolution = resolution, cool_res = cool_res,target_treatment=target_treatment, use_weight=self.use_weight, clip_pc=self.clip_pc)
+                chr_data_dict[chr_name] = ChromosomeDataset(self.data_root,self.sample_length, chr_name, omit_regions, genomic_features, self.use_aug, mode, resolution = resolution, cool_res = cool_res,target_treatment=target_treatment, use_weight=self.use_weight, clip_pc=self.clip_pc)
             lengths.append(len(chr_data_dict[chr_name]))
         print('Chromosome datasets loaded')
         return chr_data_dict, lengths

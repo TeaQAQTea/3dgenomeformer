@@ -162,7 +162,6 @@ class ChromosomeDataset(Dataset):
             # Way smaller than omit or way larger than omit
             start_cond = start <= omit_regions[:, 1]
             end_cond = omit_regions[:, 0] <= end
-            #import pdb; pdb.set_trace()
             if sum(start_cond * end_cond) == 0:
                 valid_intervals.append([start, end])
         return valid_intervals

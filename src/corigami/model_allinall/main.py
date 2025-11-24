@@ -12,7 +12,7 @@ import pl_bolts
 from typing import List, Pattern, Iterable
 import torch.nn.functional as F
 from tqdm import tqdm
-
+import cell_dataset
 def main():
     args = init_parser()
     if args.mode == 'test':
@@ -37,9 +37,8 @@ def init_parser():
                         help='Root path of training data', required=True)
   parser.add_argument('--assembly', dest='dataset_assembly', default='hg38',
                         help='Genome assembly for training data')
-  parser.add_argument('--celltype', dest='dataset_celltype', default='imr90',
+  parser.add_argument('--celltype', dest='dataset_celltype', nargs='+',default=['imr90'],
                         help='Sample cell type for prediction, used for output separation')
-
   # Model parameters
   parser.add_argument('--model-type', dest='model_type', default='ConvTransModel',
                         help='CNN with Transformer')
@@ -599,7 +598,7 @@ class TrainModule(pl.LightningModule):
 
     def get_dataset(self, args, mode):
 
-        celltype_root = f'{args.dataset_data_root}/{args.dataset_assembly}/{args.dataset_celltype}'
+        celltype_root = f'{args.dataset_data_root}/{args.dataset_assembly}'
         genomic_features={}
         for i in range(len(args.epigenomic_features)):
             genomic_features[args.epigenomic_features[i]] = {'file_name' : f'{args.epigenomic_features[i]}',
@@ -611,7 +610,9 @@ class TrainModule(pl.LightningModule):
             f.write(f'genomic_features: {genomic_features}\n')
             f.write(args.__str__())
 
-        dataset = genome_dataset.GenomeDataset(celltype_root, 
+        dataset = cell_dataset.CellLineDataset(
+                                args.dataset_celltype,
+                                celltype_root, 
                                 args.dataset_assembly,
                                 args.sample_length,
                                 genomic_features, 
@@ -668,6 +669,4 @@ class TrainModule(pl.LightningModule):
         return model
 
 if __name__ == '__main__':
-    print("CUDA_VISIBLE_DEVICES =", os.getenv("CUDA_VISIBLE_DEVICES"))
-    print("torch.cuda.device_count() =", torch.cuda.device_count())
     main()
