@@ -51,9 +51,9 @@ class ConvTransModel(ConvModel):
         if backbone == 'Mamba':
             config = MambaConfig(
                 d_model=mid_hidden,        
-                n_layers=3,                
-                d_state=16,                
-                expand_factor=2,           
+                n_layers=12,                
+                d_state=64,                
+                expand_factor=6,           
                 dt_init="random",          
                 pscan=True,                
                 use_cuda=True           
@@ -62,7 +62,7 @@ class ConvTransModel(ConvModel):
             record_attn = False
         else:
             self.attn = blocks.AttnModule(hidden = mid_hidden, record_attn = record_attn)
-        self.decoder = blocks.Decoder(mid_hidden * 2)
+        self.decoder = blocks.Decoder(mid_hidden*2 )
         self.record_attn = record_attn
     
     def forward(self, x):
@@ -80,6 +80,7 @@ class ConvTransModel(ConvModel):
             x = self.attn(x)
         x = self.move_feature_forward(x)
         x = self.diagonalize(x, length = sample_len//self.resolution)
+        print(x.shape)
         x = self.decoder(x).squeeze(1)
         # print(x.shape)
         if self.record_attn:

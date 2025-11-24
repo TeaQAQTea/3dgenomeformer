@@ -8,7 +8,7 @@ import numpy as np
 from skimage.transform import resize
 from torch.utils.data import Dataset
 
-import corigami.data.data_feature as data_feature
+import data_feature as data_feature
 
 class ChromosomeDataset(Dataset):
     '''
@@ -22,16 +22,19 @@ class ChromosomeDataset(Dataset):
             as ``root/DNA/chr1/DNA`` for DNA as an example.
         omit_regions (list of tuples): start and end of excluded regions
     '''
-    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None, resolution = 4096, cool_res = 5000):
+    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None, resolution = 4096, cool_res = 5000, target_treatment='clip',use_weight=False, clip_pc=95):
 
         sample_length = 2097152 # 2Mbp
         self.use_aug = use_aug
         self.res = cool_res # 5000 or 10000
         self.bins = sample_length / cool_res # 209.7152 bins 2097152 bp
         self.image_scale = sample_length//resolution # IMPORTANT, scale 210 to 256
+        self.treatment = target_treatment
+        self.use_weight = use_weight
+        self.clip_pc = clip_pc
         if mode == 'finetune':
-            self.sample_bins = self.image_scale + 50
-            self.stride = self.image_scale // 10
+            self.sample_bins = self.image_scale + 20
+            self.stride = self.image_scale // 20
         else:
             self.sample_bins = self.image_scale*2
             self.stride = self.image_scale // 5
@@ -44,10 +47,14 @@ class ChromosomeDataset(Dataset):
         if mode == 'finetune':
             self.mat = data_feature.HiCFeature(path = f'{celltype_root}/finetune_hic_matrix/{chr_name}.npz')
         else:
-            if cool_res == 10000:
+            if cool_res == 3000:
+                self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_3000_1024/{chr_name}.npz')
+            elif cool_res == 10000:
                 self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix/{chr_name}.npz')
-            else:
+            elif cool_res == 5000:
                 self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_5000_512/{chr_name}.npz')
+            else:
+                raise Exception('cool_res should be 3000, 5000 or 10000')
 
         self.omit_regions = omit_regions
         self.check_length() # Check data length
@@ -66,7 +73,7 @@ class ChromosomeDataset(Dataset):
             start, end = self.shift_aug(target_size, start, end)
         else:
             start, end = self.shift_fix(target_size, start, end)
-        seq, features, mat = self.get_data_at_interval(start, end)
+        seq, features, mat, weight = self.get_data_at_interval(start, end)
 
         if self.use_aug:
             # Extra on sequence
@@ -76,7 +83,7 @@ class ChromosomeDataset(Dataset):
             # Reverse complement all data
             seq, features, mat = self.reverse(seq, features, mat)
 
-        return seq, features, mat, start, end
+        return seq, features, mat, start, end, weight
 
     def __len__(self):
         return len(self.intervals)
@@ -119,7 +126,7 @@ class ChromosomeDataset(Dataset):
             seq_comp = seq
         return seq_comp
 
-    def get_data_at_interval(self, start, end):
+    def get_data_at_interval(self, start, end,cool_res = 5000):
         '''
         Slice data from arrays with transformations
         '''
@@ -128,11 +135,45 @@ class ChromosomeDataset(Dataset):
         # Features processing
         features = [item.get(self.chr_name, start, end) for item in self.genomic_features]
         # Hi-C matrix processing
-        mat = self.mat.get(start)
-        mat = resize(mat, (self.image_scale, self.image_scale), anti_aliasing=True)
-        mat = np.log(mat + 1)
-        return seq, features, mat
+        mat = self.mat.get(start, res = cool_res)
 
+        mat = resize(mat, (self.image_scale, self.image_scale), anti_aliasing=True)
+    
+        #设置截断值
+        #取0.85分位数
+        if self.treatment == 'linear':
+            mat = mat*10
+            mat = np.log(mat + 10)
+
+        elif self.treatment == 'clip':
+            mat = np.log(mat + 1)
+            percentile = np.percentile(mat, self.clip_pc)
+            mat = np.clip(mat, 0, percentile)
+
+
+
+        if self.use_weight:
+            weight = self.get_weight(mat)
+        else:
+            weight = np.ones(mat.shape)
+        return seq, features, mat, weight
+
+    def get_weight(self, mat):
+        # 计算分位数阈值
+        q70 = np.nanpercentile(mat, 70)
+        q80 = np.nanpercentile(mat, 80)
+
+        # 初始化全1权重矩阵
+        weight = np.ones_like(mat, dtype=float)
+
+        # 构造mask：处于70~80分位之间的元素
+        mask = (mat >= q70) & (mat <= q80)
+
+        # 提高这部分区域的权重
+        weight[mask] = 5.0
+
+        return weight
+    
     def get_active_intervals(self, mode, finetune_regions=None):
         '''
         Get intervals for sample data: [[start, end]]
@@ -175,23 +216,6 @@ class ChromosomeDataset(Dataset):
                 valid_intervals.append([start, end])
         return valid_intervals
     
-    def filter2(self, intervals, fine_tune_regions):
-        """
-        保留所有完全落在 fine_tune_regions 内的 intervals
-        intervals: list of [start, end]
-        fine_tune_regions: numpy array of shape (N, 2)  每行是 [region_start, region_end]
-        """
-        valid_intervals = []
-        for start, end in intervals:
-            print(fine_tune_regions)
-            print("1111",start,end)
-            # 判断是否完全被任意一个 fine_tune 区间包含
-            start_cond = fine_tune_regions[:, 0] <= start
-            end_cond = end <= fine_tune_regions[:, 1]
-            # 若存在某个 fine_tune_region 完全包含该 interval，则保留
-            if (start_cond & end_cond).any():
-                valid_intervals.append([start, end])
-        return valid_intervals
     
     def encode_seq(self, seq):
         ''' 

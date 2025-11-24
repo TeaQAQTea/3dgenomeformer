@@ -53,7 +53,16 @@ class HiCFeature(Feature):
                 else:
                     diag_line.append(diag_load[str(line_i)][start + diag_i])
             diag_region.append(diag_line)
-        diag_region = np.array(diag_region).reshape(square_len, square_len)
+        diag_region = np.nan_to_num(diag_region, nan=0.0, posinf=0.0, neginf=0.0)
+        
+
+        # 只用有限值算均值（此时已无 Inf/NaN，其实直接 mean 也行）
+        mean_diag_region = np.mean(diag_region, dtype=np.float64)
+
+        # 避免除 0
+        if abs(mean_diag_region) < 1e-8:
+            return diag_region
+        diag_region = diag_region / mean_diag_region
         return diag_region
 
     def __len__(self):

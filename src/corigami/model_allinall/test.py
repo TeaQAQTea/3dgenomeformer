@@ -86,31 +86,18 @@ def init_test(args):
 
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     #时间戳
-    import time
-    timestamp = time.strftime("%Y-%m-%d_%H-%M-%S_test", time.localtime())
 
-
-    # Logger
-    #使用tensorboard记录
-    print("aaaaaaaa")
     print(args.run_save_path)
     tb_logger = pl.loggers.TensorBoardLogger(save_dir = f'{args.run_save_path}/tb')
     
     pl_module = TrainModule(args)
     checkpoint_path=args.model_path
-    # pl_module = pl_module.load_from_checkpoint(checkpoint_path)
     testloader = pl_module.get_dataloader(args, 'test')
     
     model=pl_module.load_from_checkpoint(checkpoint_path, args=args)
     trainer = pl.Trainer(gpus=args.trainer_num_gpu, logger=tb_logger)
     output=trainer.test(model, testloader)
     print(output)
-    # #保存成h5
-    # import h5py
-    # output_path = f'{args.run_save_path}/output_{timestamp}.h5'
-    # with h5py.File(output_path, 'w') as f:
-    #     f.create_dataset(data=output, name='output')
-    # print(f'Output saved to {output_path}')
 
 
 
@@ -276,24 +263,6 @@ class TrainModule(pl.LightningModule):
         outputs= self(inputs)
         criterion = torch.nn.MSELoss()
         loss = criterion(outputs, mat)
-        # mean_mat=torch.mean(mat,dim=(1,2))
-        # mean_outputs=torch.mean(outputs,dim=(1,2))
-        # std_mat=torch.std(mat,dim=(1,2))
-        # std_outputs=torch.std(outputs,dim=(1,2))
-        # index_not_zero=index_not_zero = torch.nonzero(torch.logical_and( std_mat!= 0, std_outputs != 0)).squeeze()
-        # pearson_r=[]
-
-        # if len(index_not_zero)==0:
-        #     pearson_r=torch.tensor(0)
-        # else:   
-        #     for index in index_not_zero:
-        #         diff_mat=mat[index,:,:]-mean_mat[index]
-        #         diff_outputs=outputs[index,:,:]-mean_outputs[index]
-        #         diff_prod=torch.sum(diff_mat*diff_outputs,dim=(0,1))/(torch.numel(diff_mat)-1)
-        #         pearson_r_per_sample=diff_prod/(std_mat[index]*std_outputs[index])
-        #         pearson_r.append(pearson_r_per_sample)
-        #     pearson_r=torch.stack(pearson_r).mean()
-
         return {'loss' : loss,'target':mat,'predict':outputs,'start':start,'end':end,'chr_name':chr_name,'chr_idx':chr_idx}
 
     # Collect epoch statistics
