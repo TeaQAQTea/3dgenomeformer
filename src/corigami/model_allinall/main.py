@@ -72,9 +72,8 @@ def init_parser():
   parser.add_argument('--num-workers', dest='dataloader_num_workers', default=20,
                         type=int,
                         help='Dataloader workers')
-  parser.add_argument('--gpu-number', dest='gpu', default=3,
-                        type=str,
-                        help='gpu id')
+  parser.add_argument('--gpu-number', dest='gpu', nargs='+',  default=['0'], help='GPU id(s), e.g. --gpu-number 0 1')
+  
   parser.add_argument('--epigenomic-features', nargs='+', dest='epigenomic_features', default=['ctcf_log2fc', 'ro'],)
 
   parser.add_argument('--log',dest='feature_log', nargs='+',default=['log','log'])
@@ -97,11 +96,19 @@ def init_parser():
   parser.add_argument('--reinit-head', action='store_true',
                         help='Reinit (reset) last-layer(s) commonly used as head. 需要你在下面的函数里按项目习惯补充匹配规则。')
   parser.add_argument('--loss-type', dest='loss_type',type=str,default='mse',choices=['mse', 'insulation_combined'],help='Type of loss function to use: mse | distance_decay | insulation_combined')
-  parser.add_argument('--target-treatment', dest='target_treatment',type=str,default='clip',choices=['linear','clip'],help='How to treat the target Hi-C contact map: log1p | raw')
+  parser.add_argument('--target-treatment', dest='target_treatment',type=str,default='clip',choices=['linear','clip','log'],help='How to treat the target Hi-C contact map: log1p | raw')
   parser.add_argument('--weight',dest = 'use_weight',action='store_true',help='Whether to use weighting in loss function.')
   parser.add_argument('--opt-type', dest='opt_type',type=str,default='adam',choices=['adam','adamw'],help='Type of optimizer to use: adam | adamw')
   parser.add_argument('--clip-pc', dest ='clip_pc',type=float,default=95,help='Percentile for clipping the target Hi-C contact map.')
+  parser.add_argument('--sample-length', dest='sample_length', type=int,
+                    default=2097152,
+                    help='Length of the input genomic sequence (e.g., 2Mb = 2097152).')
   args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
+  if isinstance(args.gpu, (list, tuple)):
+    args.gpu = ",".join(str(i) for i in args.gpu)
+  else:
+    args.gpu = str(args.gpu)
+
   for i in range (len(args.feature_log)):
       if args.feature_log[i]=='None':
             args.feature_log[i]=None
@@ -187,7 +194,7 @@ def count_trainable(model: torch.nn.Module):
     return total, trainable
 
 def init_finetune(args):
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     args.lr = args.lr/50
     
     # ========== 载入预训练权重到 LightningModule ==========
@@ -282,19 +289,22 @@ def init_training(args):
     # Assign seed
     pl.seed_everything(args.run_seed, workers=True)
     pl_module = TrainModule(args)
+    if args.model_path != '':
+        print(f'Loading model weights from {args.model_path} for training...')
+        state_dict = torch.load(args.model_path, map_location='cpu')['state_dict']
+        pl_module.load_state_dict(state_dict, strict=False)
     trainloader = pl_module.get_dataloader(args, 'train')
     valloader = pl_module.get_dataloader(args, 'val')
-
-    pl_module = TrainModule(args)
-    pl_trainer = pl.Trainer(strategy='ddp',
-                            accelerator="gpu", devices=args.trainer_num_gpu,
-                            gradient_clip_val=1,
-                            logger = tb_logger,
-                            callbacks = [early_stop_callback,
-                                         checkpoint_callback,
-                                         lr_monitor],
-                            max_epochs = args.trainer_max_epochs
-                            )
+    num_visible = torch.cuda.device_count()
+    use_ddp = (num_visible >= 2) and (int(args.trainer_num_gpu) >= 2)
+    pl_trainer = pl.Trainer(
+            accelerator="ddp",           # ✅ 1.6 常用写法；等价写法：strategy="ddp", accelerator="gpu"
+            gpus=int(args.trainer_num_gpu),  # ✅ 用 gpus，不用 devices
+            gradient_clip_val=1.0,
+            logger=tb_logger,
+            callbacks=[early_stop_callback, checkpoint_callback, lr_monitor],
+            max_epochs=int(args.trainer_max_epochs),          # ✅ 可选：混合精度省显存
+        )
     pl_trainer.fit(pl_module, trainloader, valloader)
 
 class TrainModule(pl.LightningModule):
@@ -308,7 +318,7 @@ class TrainModule(pl.LightningModule):
         self.args = args
         with open(f'{args.run_save_path}/model_summary.txt', 'w') as f:
             sys.stdout = f
-            summary(self.model,input_size=(args.dataloader_batch_size, 2097152, len(args.epigenomic_features)+5))
+            summary(self.model,input_size=(args.dataloader_batch_size,args.sample_length , len(args.epigenomic_features)+5))
             sys.stdout = sys.__stdout__
 
         self.save_hyperparameters()
@@ -507,13 +517,44 @@ class TrainModule(pl.LightningModule):
 
 
     def _shared_eval_step(self, batch, batch_idx):
+       
         inputs, mat, weight = self.proc_batch(batch)
-        outputs = self(inputs)
 
-        loss_fn = self.get_loss_fn(weight=weight)          # mse 或 insulation_combined
-        loss = loss_fn(outputs, mat)          # 只返回 loss
+        # ====== 2. 检查输入 ======
+        for name, tensor in zip(["inputs", "mat", "weight"], [inputs, mat, weight]):
+            if not torch.isfinite(tensor).all():
+                self.print(f"[val] {name} 非有限值 (batch {batch_idx})，跳过该 batch")
+                return {"eval_loss": torch.tensor(0.0, device=self.device)}
 
-        self.log('eval_loss', loss, batch_size=inputs.shape[0], prog_bar=True)
+        # ====== 3. 前向传播 (关 AMP) ======
+        with torch.no_grad(), torch.cuda.amp.autocast(enabled=False):
+            outputs = self(inputs)
+
+            # 检查输出
+            if not torch.isfinite(outputs).all():
+                self.print(f"[val] outputs 非有限值 (batch {batch_idx})，clamp 修正")
+                outputs = torch.nan_to_num(outputs, nan=0.0, posinf=1e4, neginf=-1e4)
+                outputs = torch.clamp(outputs, -1e4, 1e4)
+
+            # ====== 4. 计算损失 ======
+            loss_fn = self.get_loss_fn(weight=weight)
+            loss = loss_fn(outputs, mat)
+
+            # ====== 5. 检查损失 ======
+            if not torch.isfinite(loss):
+                self.print(f"[val] loss NaN/Inf (batch {batch_idx}); "
+                        f"outputs∈[{outputs.min().item():.2e},{outputs.max().item():.2e}], "
+                        f"mat∈[{mat.min().item():.2e},{mat.max().item():.2e}], "
+                        f"weight∈[{weight.min().item():.2e},{weight.max().item():.2e}]")
+                loss = torch.tensor(0.0, device=self.device)
+
+        # ====== 6. 记录日志 ======
+        self.log(
+            'eval_loss', loss,
+            on_step=False, on_epoch=True, prog_bar=True, sync_dist=True,
+            batch_size=inputs.shape[0]
+        )
+
         return loss
 
     # Collect epoch statistics
@@ -572,6 +613,7 @@ class TrainModule(pl.LightningModule):
 
         dataset = genome_dataset.GenomeDataset(celltype_root, 
                                 args.dataset_assembly,
+                                args.sample_length,
                                 genomic_features, 
                                 mode = mode,
                                 include_sequence = True,
@@ -622,8 +664,10 @@ class TrainModule(pl.LightningModule):
         model_name =  args.model_type
         num_genomic_features = len(args.epigenomic_features)
         ModelClass = getattr(corigami_models, model_name)
-        model = ModelClass(num_genomic_features, mid_hidden = 2097152//args.resolution, backbone = args.backbone,resolution = args.resolution)
+        model = ModelClass(num_genomic_features,args.sample_length,mid_hidden = 256, backbone = args.backbone,resolution = args.resolution)
         return model
 
 if __name__ == '__main__':
+    print("CUDA_VISIBLE_DEVICES =", os.getenv("CUDA_VISIBLE_DEVICES"))
+    print("torch.cuda.device_count() =", torch.cuda.device_count())
     main()

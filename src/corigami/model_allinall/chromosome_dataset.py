@@ -22,9 +22,9 @@ class ChromosomeDataset(Dataset):
             as ``root/DNA/chr1/DNA`` for DNA as an example.
         omit_regions (list of tuples): start and end of excluded regions
     '''
-    def __init__(self, celltype_root, chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None, resolution = 4096, cool_res = 5000, target_treatment='clip',use_weight=False, clip_pc=95):
+    def __init__(self, celltype_root, sample_length,chr_name, omit_regions, feature_list, use_aug = True, mode = 'train', finetune_regions = None, resolution = 4096, cool_res = 5000, target_treatment='clip',use_weight=False, clip_pc=95):
 
-        sample_length = 2097152 # 2Mbp
+        sample_length = sample_length # 2Mbp
         self.use_aug = use_aug
         self.res = cool_res # 5000 or 10000
         self.bins = sample_length / cool_res # 209.7152 bins 2097152 bp
@@ -47,14 +47,25 @@ class ChromosomeDataset(Dataset):
         if mode == 'finetune':
             self.mat = data_feature.HiCFeature(path = f'{celltype_root}/finetune_hic_matrix/{chr_name}.npz')
         else:
-            if cool_res == 3000:
-                self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_3000_1024/{chr_name}.npz')
-            elif cool_res == 10000:
-                self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix/{chr_name}.npz')
-            elif cool_res == 5000:
-                self.mat = data_feature.HiCFeature(path = f'{celltype_root}/hic_matrix_5000_512/{chr_name}.npz')
-            else:
-                raise Exception('cool_res should be 3000, 5000 or 10000')
+            candidates = [
+                f"{celltype_root}/hic_matrix_{cool_res}_1024/{chr_name}.npz",
+                f"{celltype_root}/hic_matrix_{cool_res}_512/{chr_name}.npz",
+                f"{celltype_root}/hic_matrix_{cool_res}/{chr_name}.npz",
+            ]
+
+            hic_path = None
+            for p in candidates:
+                if os.path.exists(p):
+                    hic_path = p
+                    break
+
+            if hic_path is None:
+                raise Exception(
+                    f"No valid Hi-C matrix found for res={cool_res} in: \n" +
+                    "\n".join(candidates)
+                )
+
+            self.mat = data_feature.HiCFeature(path = hic_path)
 
         self.omit_regions = omit_regions
         self.check_length() # Check data length
@@ -73,7 +84,7 @@ class ChromosomeDataset(Dataset):
             start, end = self.shift_aug(target_size, start, end)
         else:
             start, end = self.shift_fix(target_size, start, end)
-        seq, features, mat, weight = self.get_data_at_interval(start, end)
+        seq, features, mat, weight = self.get_data_at_interval(start, end,cool_res=self.res)
 
         if self.use_aug:
             # Extra on sequence
@@ -143,12 +154,17 @@ class ChromosomeDataset(Dataset):
         #取0.85分位数
         if self.treatment == 'linear':
             mat = mat*10
-            mat = np.log(mat + 10)
+            mat = np.log(mat)
 
         elif self.treatment == 'clip':
-            mat = np.log(mat + 1)
+            mat = np.log(mat)
             percentile = np.percentile(mat, self.clip_pc)
-            mat = np.clip(mat, 0, percentile)
+            percentile_low = np.percentile(mat, 100 - self.clip_pc)
+            mat = np.clip(mat, percentile_low, percentile)
+        
+        elif self.treatment == 'log':
+            mat = np.log(mat)
+        
 
 
 
@@ -159,18 +175,33 @@ class ChromosomeDataset(Dataset):
         return seq, features, mat, weight
 
     def get_weight(self, mat):
-        # 计算分位数阈值
-        q70 = np.nanpercentile(mat, 70)
-        q80 = np.nanpercentile(mat, 80)
+        """
+        mat: numpy array (L x L)
+        return: distance weight matrix, same shape
+        """
+        import numpy as np
+        
+        L = mat.shape[0]
+        i = np.arange(L)
+        
+        # 距离矩阵 d[i,j] = |i - j|
+        dist = np.abs(i[:, None] - i[None, :])
 
-        # 初始化全1权重矩阵
-        weight = np.ones_like(mat, dtype=float)
+        # -------- ① 按 distance 求 contact 之和 --------
+        dist_flat = dist.ravel().astype(int)
+        mat_flat  = mat.ravel()
+        max_d = dist_flat.max() + 1
 
-        # 构造mask：处于70~80分位之间的元素
-        mask = (mat >= q70) & (mat <= q80)
+        # 每个距离的 contact 总和
+        contact_sum = np.bincount(dist_flat, weights=mat_flat, minlength=max_d)
 
-        # 提高这部分区域的权重
-        weight[mask] = 5.0
+        # -------- ② 构造权重：远距离 contact 少，则权重大 --------
+        # 防止除零
+        eps = 1e-8
+        w_per_dist = 1.0 / (contact_sum + eps)   # shape (L,)
+
+        # -------- ③ 将每个像素映射回对应的距离权重 --------
+        weight = w_per_dist[dist]
 
         return weight
     
